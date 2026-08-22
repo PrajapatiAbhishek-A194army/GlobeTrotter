@@ -48,6 +48,11 @@ export const getBudget = async (tripId, userId) => {
 export const updateBudget = async (tripId, userId, data) => {
   await verifyOwner(tripId, userId)
 
+  const categorySum = (data.transport || 0) + (data.accommodation || 0) + (data.meals || 0) + (data.activities || 0) + (data.other || 0)
+  if ((!data.totalBudget || data.totalBudget === 0) && categorySum > 0) {
+    data.totalBudget = categorySum
+  }
+
   const budget = await prisma.budget.upsert({
     where: { tripId },
     create: { tripId, ...data },

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   HiOutlineArrowLeft, HiOutlineCurrencyDollar, HiOutlineCheck,
   HiOutlineTrendingUp, HiOutlineTrendingDown, HiOutlineExclamation,
-  HiOutlineInformationCircle,
+  HiOutlineInformationCircle, HiOutlineSparkles, HiOutlineRefresh,
 } from 'react-icons/hi'
 import { clsx } from 'clsx'
 import toast from 'react-hot-toast'
@@ -88,7 +88,7 @@ function CategoryRow({ cat, value, total, currency, onChange }) {
             className="w-28 pl-6 pr-3 py-1.5 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 text-right"
           />
         </div>
-        <span className="text-xs text-neutral-400 w-10 text-right">
+        <span className="text-xs text-neutral-400 w-12 text-right font-medium">
           {pct > 0 ? `${pct.toFixed(0)}%` : '—'}
         </span>
       </div>
@@ -140,11 +140,28 @@ export default function BudgetPage() {
     setDirty(true)
   }
 
+  // Calculate sum of category inputs
+  const allocated = form
+    ? CATEGORIES.reduce((s, c) => s + (parseFloat(form[c.key]) || 0), 0)
+    : 0
+
+  // Calculate effective total (inputted or sum of categories)
+  const total = form
+    ? (parseFloat(form.totalBudget) > 0 ? parseFloat(form.totalBudget) : allocated)
+    : 0
+
+  const handleSyncCategories = () => {
+    set('totalBudget', String(allocated))
+    toast.success(`Total Budget set to sum: ${fmt(allocated, form?.currency || 'USD')}! 💡`)
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
+      const finalTotal = parseFloat(form.totalBudget) > 0 ? parseFloat(form.totalBudget) : allocated
+
       const payload = {
-        totalBudget:    parseFloat(form.totalBudget)    || 0,
+        totalBudget:    finalTotal,
         transport:      parseFloat(form.transport)      || 0,
         accommodation:  parseFloat(form.accommodation)  || 0,
         meals:          parseFloat(form.meals)          || 0,
@@ -155,6 +172,10 @@ export default function BudgetPage() {
       }
       const updated = await budgetService.updateBudget(tripId, payload)
       setBudget(updated)
+      setForm(prev => ({
+        ...prev,
+        totalBudget: String(updated.totalBudget || finalTotal || ''),
+      }))
       setDirty(false)
       toast.success('Budget saved! 💰')
     } catch {
@@ -174,13 +195,11 @@ export default function BudgetPage() {
     )
   }
 
-  const total     = parseFloat(form.totalBudget) || 0
-  const allocated = CATEGORIES.reduce((s, c) => s + (parseFloat(form[c.key]) || 0), 0)
   const unallocated = total - allocated
   const actualSpend = budget.actualSpend || 0
   const spendPct = total > 0 ? Math.min(100, (actualSpend / total) * 100) : 0
   const overBudget = actualSpend > total && total > 0
-  const alertLevel = form.alertThreshold
+  const alertLevel = form.alertThreshold && total > 0
     ? actualSpend / total * 100 >= parseFloat(form.alertThreshold)
     : false
 
@@ -244,7 +263,7 @@ export default function BudgetPage() {
           </div>
         )}
 
-        {/* ── Summary Cards ── */}
+        {/* ── Summary Cards (Always shows accurate figures) ── */}
         <div className="grid grid-cols-3 gap-4">
           {[
             { label: 'Total Budget',   val: fmt(total, form.currency),       icon: HiOutlineCurrencyDollar, color: 'text-primary-600', bg: 'bg-primary-50' },
@@ -290,31 +309,50 @@ export default function BudgetPage() {
             {/* Form left */}
             <div className="flex-1 space-y-5 w-full">
               {/* Currency + Total */}
-              <div className="flex items-end gap-3">
-                <div className="w-28">
-                  <label className="block text-xs font-medium text-neutral-600 mb-1">Currency</label>
-                  <select
-                    id="budget-currency"
-                    value={form.currency}
-                    onChange={e => set('currency', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white"
-                  >
-                    {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+              <div className="space-y-1.5">
+                <div className="flex items-end gap-3">
+                  <div className="w-28">
+                    <label className="block text-xs font-semibold text-neutral-600 mb-1">Currency</label>
+                    <select
+                      id="budget-currency"
+                      value={form.currency}
+                      onChange={e => set('currency', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 bg-white font-medium"
+                    >
+                      {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-semibold text-neutral-600">Total Budget</label>
+                      {allocated > 0 && (!form.totalBudget || parseFloat(form.totalBudget) !== allocated) && (
+                        <button
+                          type="button"
+                          onClick={handleSyncCategories}
+                          className="text-[11px] font-semibold text-primary-600 hover:underline flex items-center gap-1"
+                        >
+                          <HiOutlineSparkles className="w-3 h-3" />
+                          <span>Set to Sum ({fmt(allocated, form.currency)})</span>
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      id="total-budget"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={form.totalBudget}
+                      onChange={e => set('totalBudget', e.target.value)}
+                      placeholder={allocated > 0 ? `Sum: ${allocated}` : "e.g. 3000"}
+                      className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 font-semibold text-neutral-900"
+                    />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-medium text-neutral-600 mb-1">Total Budget</label>
-                  <input
-                    id="total-budget"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={form.totalBudget}
-                    onChange={e => set('totalBudget', e.target.value)}
-                    placeholder="e.g. 3000"
-                    className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400"
-                  />
-                </div>
+                {allocated > 0 && !form.totalBudget && (
+                  <p className="text-[11px] text-primary-600 font-medium">
+                    ✨ Automatically calculated from categories: {fmt(allocated, form.currency)}
+                  </p>
+                )}
               </div>
 
               {/* Category allocations */}
@@ -358,41 +396,42 @@ export default function BudgetPage() {
                   />
                 </div>
               </div>
+
+              {/* Bottom save button */}
+              <div className="pt-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  <HiOutlineCheck className="w-4 h-4" />
+                  <span>{saving ? 'Saving Budget…' : 'Save Budget & Allocations'}</span>
+                </button>
+              </div>
+
             </div>
 
-            {/* Donut chart right */}
-            <div className="flex flex-col items-center gap-4 shrink-0 sm:pt-8">
-              <DonutChart slices={donutSlices} total={allocated} currency={form.currency} />
-              {/* Legend */}
-              <div className="space-y-1.5">
-                {CATEGORIES.filter(c => (parseFloat(form[c.key]) || 0) > 0).map((cat, i) => (
-                  <div key={cat.key} className="flex items-center gap-2 text-xs text-neutral-600">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: ['#3b82f6','#6366f1','#ef4444','#f59e0b','#9ca3af'][i] }} />
-                    {cat.label}: {fmt(form[cat.key], form.currency)}
-                  </div>
-                ))}
+            {/* Donut right */}
+            <div className="flex flex-col items-center gap-4 pt-2 shrink-0 self-center sm:self-start">
+              <DonutChart slices={donutSlices} total={total} currency={form.currency} />
+              <div className="space-y-1 text-xs">
+                {donutSlices.map((s, i) => {
+                  const cat = CATEGORIES.find(c => c.key === s.key)
+                  const colors = ['bg-blue-500','bg-indigo-500','bg-red-500','bg-amber-500','bg-neutral-400']
+                  return (
+                    <div key={s.key} className="flex items-center gap-1.5 text-neutral-600">
+                      <span className={clsx('w-2.5 h-2.5 rounded-full shrink-0', colors[i])} />
+                      <span>{cat?.label}:</span>
+                      <span className="font-semibold text-neutral-800">{fmt(s.val, form.currency)}</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* ── Save Button ── */}
-        <div className="flex justify-end gap-3">
-          <Link to={`/trips/${tripId}`}>
-            <button className="px-5 py-2.5 text-sm text-neutral-600 font-medium border border-neutral-200 rounded-xl hover:bg-neutral-50 transition-colors">
-              Back to Trip
-            </button>
-          </Link>
-          <button
-            id="save-budget-bottom"
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm disabled:opacity-60 active:scale-[0.98]"
-          >
-            <HiOutlineCheck className="w-4 h-4" />
-            {saving ? 'Saving…' : 'Save Budget'}
-          </button>
-        </div>
       </div>
     </AppLayout>
   )
