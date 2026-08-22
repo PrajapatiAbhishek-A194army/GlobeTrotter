@@ -18,6 +18,12 @@ import ResetPasswordPage  from './pages/auth/ResetPasswordPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import AppLayout     from './layouts/AppLayout'
 
+// Phase 5 — Trip Management
+import TripsPage      from './pages/trips/TripsPage'
+import CreateTripPage from './pages/trips/CreateTripPage'
+import TripDetailPage from './pages/trips/TripDetailPage'
+import EditTripPage   from './pages/trips/EditTripPage'
+
 // Auth guard
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -87,16 +93,16 @@ function AppRoutes() {
 
       {/* ── Phase 5 — Trip Management (protected) ── */}
       <Route path="/trips" element={
-        <ProtectedRoute><PlaceholderApp title="My Trips" /></ProtectedRoute>
+        <ProtectedRoute><TripsPage /></ProtectedRoute>
       }/>
       <Route path="/trips/new" element={
-        <ProtectedRoute><PlaceholderApp title="Create Trip" /></ProtectedRoute>
+        <ProtectedRoute><CreateTripPage /></ProtectedRoute>
       }/>
       <Route path="/trips/:id" element={
-        <ProtectedRoute><PlaceholderApp title="Trip Details" /></ProtectedRoute>
+        <ProtectedRoute><TripDetailPage /></ProtectedRoute>
       }/>
       <Route path="/trips/:id/edit" element={
-        <ProtectedRoute><PlaceholderApp title="Edit Trip" /></ProtectedRoute>
+        <ProtectedRoute><EditTripPage /></ProtectedRoute>
       }/>
 
       {/* ── Phase 6 — Itinerary (protected) ── */}
