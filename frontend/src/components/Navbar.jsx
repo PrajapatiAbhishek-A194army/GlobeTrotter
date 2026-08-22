@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { HiOutlineGlobeAlt, HiOutlineMenuAlt3, HiX, HiArrowRight } from 'react-icons/hi'
 import { clsx } from 'clsx'
 import Button from './ui/Button'
 import { useAuth } from '../context/AuthContext'
 
 const navLinks = [
-  { label: 'Features',     href: '/#features' },
-  { label: 'Destinations', href: '/#destinations' },
-  { label: 'How It Works', href: '/#how-it-works' },
+  { label: 'Features',     href: '/#features',     sectionId: 'features' },
+  { label: 'Destinations', href: '/#destinations', sectionId: 'destinations' },
+  { label: 'How It Works', href: '/#how-it-works', sectionId: 'how-it-works' },
   { label: 'Community',    href: '/community' },
 ]
 
@@ -16,6 +16,7 @@ export default function Navbar() {
   const [scrolled,   setScrolled]   = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
 
   // Detect scroll — apply background + shadow
@@ -31,6 +32,22 @@ export default function Navbar() {
   }, [location])
 
   const isLandingPage = location.pathname === '/'
+
+  const handleNavClick = (e, link) => {
+    if (link.sectionId) {
+      if (isLandingPage) {
+        e.preventDefault()
+        const el = document.getElementById(link.sectionId)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          window.history.pushState(null, '', `#${link.sectionId}`)
+        }
+      } else {
+        // Navigating from another page to landing page section
+        navigate(`/#${link.sectionId}`)
+      }
+    }
+  }
 
   const avatarSrc = user?.avatar
     ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`)
@@ -64,6 +81,7 @@ export default function Navbar() {
               <Link
                 key={link.label}
                 to={link.href}
+                onClick={(e) => handleNavClick(e, link)}
                 className={clsx(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150',
                   'text-neutral-600 hover:text-primary-700 hover:bg-primary-50'
@@ -134,6 +152,7 @@ export default function Navbar() {
             <Link
               key={link.label}
               to={link.href}
+              onClick={(e) => handleNavClick(e, link)}
               className="flex items-center px-4 py-3 rounded-xl text-sm font-medium text-neutral-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
             >
               {link.label}
