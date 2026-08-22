@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   HiOutlinePhotograph, HiOutlineCalendar, HiOutlineGlobe,
-  HiOutlineLockClosed, HiOutlineArrowLeft, HiOutlineX,
+  HiOutlineLockClosed, HiOutlineArrowLeft, HiOutlineX, HiOutlinePlus,
 } from 'react-icons/hi'
 import { clsx } from 'clsx'
 import toast from 'react-hot-toast'
