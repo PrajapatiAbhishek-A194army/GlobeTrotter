@@ -32,7 +32,7 @@ export const createTrip = async (req, res, next) => {
       title, description,
       startDate: startDate ? new Date(startDate) : null,
       endDate:   endDate   ? new Date(endDate)   : null,
-      isPublic:  !!isPublic,
+      isPublic:  isPublic === true || isPublic === 'true',
       coverImage: req.file ? `/uploads/${req.file.filename}` : null,
     })
     res.status(201).json({ success: true, message: 'Trip created!', data: { trip } })
@@ -44,8 +44,9 @@ export const updateTrip = async (req, res, next) => {
   try {
     const allowed = ['title','description','startDate','endDate','status','isPublic']
     const data = Object.fromEntries(Object.entries(req.body).filter(([k]) => allowed.includes(k)))
-    if (data.startDate) data.startDate = new Date(data.startDate)
-    if (data.endDate)   data.endDate   = new Date(data.endDate)
+    if (data.startDate)          data.startDate = new Date(data.startDate)
+    if (data.endDate)            data.endDate   = new Date(data.endDate)
+    if ('isPublic' in data)      data.isPublic  = data.isPublic === true || data.isPublic === 'true'
     if (req.file) data.coverImage = `/uploads/${req.file.filename}`
     const trip = await tripService.updateTrip(req.params.id, req.user.id, data)
     res.json({ success: true, message: 'Trip updated.', data: { trip } })

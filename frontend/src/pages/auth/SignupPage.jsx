@@ -82,7 +82,7 @@ export default function SignupPage() {
         city:      form.city || undefined,
         country:   form.country || undefined,
       })
-      loginCtx(user, token)
+      loginCtx(user, token, true)
       toast.success(`Account created! Welcome, ${user.firstName}! 🌍`)
       navigate('/dashboard', { replace: true })
     } catch (err) {

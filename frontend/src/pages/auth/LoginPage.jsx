@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [errors,   setErrors]   = useState({})
   const [showPass, setShowPass] = useState(false)
   const [loading,  setLoading]  = useState(false)
+  const [remember, setRemember] = useState(true)
 
   const from = location.state?.from?.pathname || '/dashboard'
 
@@ -42,7 +43,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const { user, token } = await authService.login(form)
-      loginCtx(user, token)
+      loginCtx(user, token, remember)
       toast.success(`Welcome back, ${user.firstName}! 🌍`)
       navigate(from, { replace: true })
     } catch (err) {
@@ -107,8 +108,23 @@ export default function LoginPage() {
           }
         />
 
-        {/* Forgot link */}
-        <div className="flex justify-end -mt-2">
+        {/* Remember me + Forgot link */}
+        <div className="flex items-center justify-between -mt-2">
+          <label id="remember-me-label" className="flex items-center gap-2 cursor-pointer select-none">
+            <div
+              onClick={() => setRemember(v => !v)}
+              className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all cursor-pointer ${
+                remember ? 'bg-primary-600 border-primary-600' : 'border-neutral-300 hover:border-primary-400'
+              }`}
+            >
+              {remember && (
+                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8">
+                  <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+            <span className="text-xs text-neutral-600">Remember me for 30 days</span>
+          </label>
           <Link
             to="/forgot-password"
             className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
