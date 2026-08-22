@@ -42,4 +42,9 @@ export const getSharedTrip = async (token) => {
   return data.data.trip
 }
 
-export default { getTrips, getTripStats, getTripById, createTrip, updateTrip, deleteTrip, getSharedTrip }
+export const generateShareToken = async (id) => {
+  const { data } = await api.post(`/trips/${id}/share`)
+  return data.data.shareToken
+}
+
+export default { getTrips, getTripStats, getTripById, createTrip, updateTrip, deleteTrip, getSharedTrip, generateShareToken }

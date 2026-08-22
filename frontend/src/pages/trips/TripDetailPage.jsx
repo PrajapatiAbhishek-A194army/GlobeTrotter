@@ -90,12 +90,19 @@ export default function TripDetailPage() {
     }
   }
 
-  const handleShare = () => {
-    if (trip.shareToken) {
-      navigator.clipboard.writeText(`${window.location.origin}/share/${trip.shareToken}`)
-      toast.success('Share link copied!')
-    } else {
-      toast('This trip is private. Make it public to get a share link.', { icon: '🔒' })
+  const handleShare = async () => {
+    try {
+      let token = trip.shareToken
+      if (!token) {
+        // Generate a share token on the fly
+        token = await tripService.generateShareToken(id)
+        setTrip(prev => ({ ...prev, shareToken: token }))
+      }
+      const shareUrl = `${window.location.origin}/share/${token}`
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success('Share link copied to clipboard! 🔗')
+    } catch {
+      toast.error('Failed to generate share link.')
     }
   }
 

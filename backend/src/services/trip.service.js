@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import prisma from '../config/database.js'
 import { createError } from '../middleware/errorHandler.js'
 
@@ -96,11 +97,27 @@ export const getTripById = async (tripId, userId) => {
  * Create a new trip
  */
 export const createTrip = async (userId, data) => {
+  const shareToken = crypto.randomUUID().slice(0, 12)
   const trip = await prisma.trip.create({
-    data: { ...data, userId },
+    data: { ...data, userId, shareToken },
     include: { stops: true, budget: true },
   })
   return trip
+}
+
+/**
+ * Generate a share token for an existing trip (if it doesn't have one)
+ */
+export const generateShareToken = async (tripId, userId) => {
+  const trip = await getTripById(tripId, userId)
+  if (trip.shareToken) return trip // already has one
+
+  const shareToken = crypto.randomUUID().slice(0, 12)
+  return prisma.trip.update({
+    where: { id: tripId },
+    data: { shareToken },
+    include: { stops: true, budget: true },
+  })
 }
 
 /**

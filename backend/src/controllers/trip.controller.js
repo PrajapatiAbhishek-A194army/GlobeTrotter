@@ -53,6 +53,14 @@ export const updateTrip = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+// POST /api/trips/:id/share
+export const generateShareToken = async (req, res, next) => {
+  try {
+    const trip = await tripService.generateShareToken(req.params.id, req.user.id)
+    res.json({ success: true, data: { shareToken: trip.shareToken } })
+  } catch (err) { next(err) }
+}
+
 // DELETE /api/trips/:id
 export const deleteTrip = async (req, res, next) => {
   try {
