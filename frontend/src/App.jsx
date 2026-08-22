@@ -30,6 +30,7 @@ import ItineraryPage from './pages/trips/ItineraryPage'
 // Phase 7 — Discovery
 import DiscoverCitiesPage     from './pages/discover/DiscoverCitiesPage'
 import DiscoverActivitiesPage from './pages/discover/DiscoverActivitiesPage'
+import DestinationDetailPage  from './pages/discover/DestinationDetailPage'
 
 // Phase 8 — Budget Planner
 import BudgetPage from './pages/trips/BudgetPage'
@@ -138,6 +139,8 @@ function AppRoutes() {
 
       {/* ── Phase 7 — Discovery (public) ── */}
       <Route path="/discover/cities"     element={<DiscoverCitiesPage />} />
+      <Route path="/discover/cities/:id" element={<DestinationDetailPage />} />
+      <Route path="/destinations/:id"    element={<DestinationDetailPage />} />
       <Route path="/discover/activities" element={<DiscoverActivitiesPage />} />
 
       {/* ── Phase 8 — Budget (protected) ── */}

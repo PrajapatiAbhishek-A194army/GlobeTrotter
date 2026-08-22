@@ -40,12 +40,18 @@ function DestinationCard({ dest }) {
   const cost = COST_LABEL(dest.costIndex)
 
   return (
-    <div className="group bg-white rounded-2xl border border-neutral-100 shadow-card hover:shadow-card-md hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col">
+    <Link
+      to={`/destinations/${dest.id}`}
+      className="group bg-white rounded-2xl border border-neutral-100 shadow-card hover:shadow-card-md hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col"
+    >
       {/* Image */}
-      <div className="relative h-52 overflow-hidden shrink-0">
+      <div className="relative h-52 overflow-hidden shrink-0 bg-neutral-800">
         <img
-          src={dest.image || `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=75`}
+          src={dest.image || `https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=75`}
           alt={dest.name}
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=75'
+          }}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
@@ -115,16 +121,11 @@ function DestinationCard({ dest }) {
         </div>
 
         {/* CTA */}
-        {isAuthenticated && (
-          <Link
-            to={`/trips/new`}
-            className="mt-1 flex items-center justify-center gap-1.5 w-full px-4 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-xl text-xs font-semibold transition-colors"
-          >
-            <HiOutlinePlus className="w-3.5 h-3.5" /> Plan a Trip Here
-          </Link>
-        )}
+        <div className="mt-1 flex items-center justify-center gap-1.5 w-full px-4 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-xl text-xs font-semibold transition-colors">
+          <HiOutlineGlobe className="w-3.5 h-3.5" /> Explore {dest.name} Guide →
+        </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

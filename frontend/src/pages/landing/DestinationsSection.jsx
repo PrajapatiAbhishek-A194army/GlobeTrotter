@@ -110,14 +110,17 @@ export default function DestinationsSection() {
           {destinations.map((dest) => (
             <Link
               key={dest.id}
-              to={`/discover/cities?q=${dest.name}`}
+              to={`/destinations/${dest.id}`}
               className="group relative block rounded-2xl overflow-hidden shadow-card hover:shadow-card-xl transition-all duration-300 hover:-translate-y-1"
             >
               {/* Image */}
-              <div className="aspect-[4/3] overflow-hidden bg-neutral-100">
+              <div className="aspect-[4/3] overflow-hidden bg-neutral-800">
                 <img
                   src={dest.image}
                   alt={`${dest.name}, ${dest.country}`}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80'
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                 />
