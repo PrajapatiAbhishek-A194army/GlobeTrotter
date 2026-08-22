@@ -1,0 +1,251 @@
+// =============================================================
+// GlobeTrotter — Prisma Schema
+// Database: PostgreSQL
+// ORM: Prisma v5
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================
+// ENUMS
+// =============================================================
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TripStatus {
+  PLANNING
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum ActivityCategory {
+  SIGHTSEEING
+  ADVENTURE
+  FOOD_DINING
+  CULTURE
+  SHOPPING
+  TRANSPORT
+  ACCOMMODATION
+  ENTERTAINMENT
+  WELLNESS
+  NATURE
+  OTHER
+}
+
+enum BudgetCurrency {
+  USD
+  EUR
+  GBP
+  INR
+  JPY
+  AUD
+  CAD
+  SGD
+  AED
+  CHF
+}
+
+// =============================================================
+// USER
+// =============================================================
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  phone       String?
+  city        String?
+  country     String?
+  bio         String?
+  avatar      String?
+  role        Role     @default(USER)
+  preferences Json?    // stored as JSON: { currency, language, notifications }
+
+  // Reset Password
+  resetToken          String?   @unique
+  resetTokenExpiresAt DateTime?
+
+  // Relations
+  trips               Trip[]
+  savedDestinations   SavedDestination[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// =============================================================
+// TRIP
+// =============================================================
+
+model Trip {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  coverImage  String?
+  isPublic    Boolean    @default(false)
+  shareToken  String?    @unique
+  status      TripStatus @default(PLANNING)
+  startDate   DateTime?
+  endDate     DateTime?
+  totalDays   Int?
+
+  // Relations
+  userId  String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stops   Stop[]
+  budget  Budget?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("trips")
+}
+
+// =============================================================
+// STOP (City / Destination within a trip)
+// =============================================================
+
+model Stop {
+  id        String  @id @default(cuid())
+  order     Int     // display order within trip
+  city      String
+  country   String?
+  state     String?
+  latitude  Float?
+  longitude Float?
+  image     String?
+  notes     String?
+
+  // Dates for this stop
+  startDate DateTime?
+  endDate   DateTime?
+
+  // Relations
+  tripId     String
+  trip       Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  activities Activity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("stops")
+}
+
+// =============================================================
+// ACTIVITY (Day-wise items within a stop)
+// =============================================================
+
+model Activity {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  category    ActivityCategory @default(OTHER)
+  cost        Float            @default(0)
+  duration    Int?             // minutes
+  date        DateTime?
+  startTime   String?          // "HH:MM" string
+  endTime     String?
+  location    String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  image       String?
+  bookingUrl  String?
+  notes       String?
+
+  // Relations
+  stopId String
+  stop   Stop   @relation(fields: [stopId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("activities")
+}
+
+// =============================================================
+// BUDGET (One per Trip)
+// =============================================================
+
+model Budget {
+  id           String         @id @default(cuid())
+  totalBudget  Float          @default(0)
+  transport    Float          @default(0)
+  accommodation Float         @default(0)
+  meals        Float          @default(0)
+  activities   Float          @default(0)
+  other        Float          @default(0)
+  currency     BudgetCurrency @default(USD)
+  alertThreshold Float?       // % of budget that triggers alert
+
+  // Relations — one-to-one with Trip
+  tripId String @unique
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("budgets")
+}
+
+// =============================================================
+// DESTINATION (Reference table — cities/places database)
+// =============================================================
+
+model Destination {
+  id          String   @id @default(cuid())
+  name        String
+  country     String
+  continent   String?
+  description String?
+  image       String?
+  latitude    Float?
+  longitude   Float?
+  costIndex   Float?   // relative cost indicator (1-10)
+  popularity  Int      @default(0)
+  tags        String[] // e.g. ["beach", "culture", "nightlife"]
+  climate     String?
+  bestMonths  String[] // e.g. ["December", "January"]
+
+  // Reverse relation — who saved this destination
+  savedBy SavedDestination[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("destinations")
+}
+
+// =============================================================
+// SAVED DESTINATION (User ↔ Destination many-to-many)
+// =============================================================
+
+model SavedDestination {
+  id String @id @default(cuid())
+
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  savedAt DateTime @default(now())
+
+  @@unique([userId, destinationId])
+  @@map("saved_destinations")
+}

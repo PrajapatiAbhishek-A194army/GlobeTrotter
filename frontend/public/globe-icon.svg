@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <circle cx="50" cy="50" r="45" fill="#22c55e" opacity="0.15"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="#22c55e" stroke-width="3"/>
+  <!-- Latitude lines -->
+  <ellipse cx="50" cy="50" rx="35" ry="15" fill="none" stroke="#22c55e" stroke-width="1.5" opacity="0.6"/>
+  <!-- Meridian -->
+  <line x1="50" y1="15" x2="50" y2="85" stroke="#22c55e" stroke-width="1.5" opacity="0.6"/>
+  <!-- Equator -->
+  <line x1="15" y1="50" x2="85" y2="50" stroke="#22c55e" stroke-width="1.5" opacity="0.6"/>
+  <!-- Outer circle solid -->
+  <circle cx="50" cy="50" r="35" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+</svg>
