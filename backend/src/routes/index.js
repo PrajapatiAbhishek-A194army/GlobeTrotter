@@ -37,5 +37,15 @@ router.use('/destinations', destinationRoutes)
 import stopRoutes from './stop.routes.js'
 router.use('/trips/:tripId/stops', stopRoutes)
 
+// Phase 7+8: Budget (nested under trips)
+import { Router as BudgetRouter } from 'express'
+import * as budgetController from '../controllers/budget.controller.js'
+import { protect as budgetProtect } from '../middleware/auth.js'
+const budgetRouter = BudgetRouter({ mergeParams: true })
+budgetRouter.use(budgetProtect)
+budgetRouter.get('/', budgetController.getBudget)
+budgetRouter.patch('/', budgetController.updateBudget)
+router.use('/trips/:tripId/budget', budgetRouter)
+
 export default router
 

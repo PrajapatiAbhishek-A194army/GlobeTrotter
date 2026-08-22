@@ -27,6 +27,13 @@ import EditTripPage   from './pages/trips/EditTripPage'
 // Phase 6 — Itinerary Builder
 import ItineraryPage from './pages/trips/ItineraryPage'
 
+// Phase 7 — Discovery
+import DiscoverCitiesPage     from './pages/discover/DiscoverCitiesPage'
+import DiscoverActivitiesPage from './pages/discover/DiscoverActivitiesPage'
+
+// Phase 8 — Budget Planner
+import BudgetPage from './pages/trips/BudgetPage'
+
 // Auth guard
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -114,12 +121,12 @@ function AppRoutes() {
       }/>
 
       {/* ── Phase 7 — Discovery (public) ── */}
-      <Route path="/discover/cities"     element={<PlaceholderPublic title="City Discovery" />} />
-      <Route path="/discover/activities" element={<PlaceholderPublic title="Activity Discovery" />} />
+      <Route path="/discover/cities"     element={<DiscoverCitiesPage />} />
+      <Route path="/discover/activities" element={<DiscoverActivitiesPage />} />
 
       {/* ── Phase 8 — Budget (protected) ── */}
       <Route path="/trips/:id/budget" element={
-        <ProtectedRoute><PlaceholderApp title="Budget Planner" /></ProtectedRoute>
+        <ProtectedRoute><BudgetPage /></ProtectedRoute>
       }/>
 
       {/* ── Phase 9 — Calendar (protected) ── */}
