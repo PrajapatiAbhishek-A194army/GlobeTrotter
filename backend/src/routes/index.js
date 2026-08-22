@@ -22,10 +22,10 @@ router.get('/', (req, res) => {
   })
 })
 
-// ---- Route Modules (added per phase) ----
-// Phase 3:
-// import authRoutes from './auth.routes.js'
-// router.use('/auth', authRoutes)
+// ---- Route Modules ----
+// Phase 3: Authentication
+import authRoutes from './auth.routes.js'
+router.use('/auth', authRoutes)
 
 // Phase 4+:
 // import userRoutes from './user.routes.js'
