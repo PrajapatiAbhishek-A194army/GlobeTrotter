@@ -11,6 +11,7 @@ import toast from 'react-hot-toast'
 import AppLayout from '../../layouts/AppLayout'
 import TripStatusBadge from '../../components/ui/TripStatusBadge'
 import Button from '../../components/ui/Button'
+import ShareTripModal from '../../components/trips/ShareTripModal'
 import * as tripService from '../../services/trip.service'
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
@@ -69,6 +70,7 @@ export default function TripDetailPage() {
   const [loading,  setLoading]  = useState(true)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showShareModal,    setShowShareModal]    = useState(false)
 
   useEffect(() => {
     tripService.getTripById(id)
@@ -90,20 +92,8 @@ export default function TripDetailPage() {
     }
   }
 
-  const handleShare = async () => {
-    try {
-      let token = trip.shareToken
-      if (!token) {
-        // Generate a share token on the fly
-        token = await tripService.generateShareToken(id)
-        setTrip(prev => ({ ...prev, shareToken: token }))
-      }
-      const shareUrl = `${window.location.origin}/share/${token}`
-      await navigator.clipboard.writeText(shareUrl)
-      toast.success('Share link copied to clipboard! 🔗')
-    } catch {
-      toast.error('Failed to generate share link.')
-    }
+  const handleShare = () => {
+    setShowShareModal(true)
   }
 
   const formatDateRange = (start, end) => {
@@ -338,6 +328,14 @@ export default function TripDetailPage() {
           </div>
         </div>
       )}
+
+      {/* ── Share Modal ── */}
+      <ShareTripModal
+        trip={trip}
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        onUpdateTrip={(updated) => setTrip(updated)}
+      />
     </AppLayout>
   )
 }

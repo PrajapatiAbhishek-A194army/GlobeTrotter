@@ -145,7 +145,7 @@ export const deleteTrip = async (tripId, userId) => {
  */
 export const getSharedTrip = async (shareToken) => {
   const trip = await prisma.trip.findFirst({
-    where: { shareToken, isPublic: true },
+    where: { shareToken },
     include: {
       user:  { select: { firstName: true, lastName: true, avatar: true } },
       stops: {
@@ -155,7 +155,7 @@ export const getSharedTrip = async (shareToken) => {
       budget: true,
     },
   })
-  if (!trip) throw createError('Shared trip not found or is no longer public.', 404)
+  if (!trip) throw createError('Shared trip not found or link has expired.', 404)
   return trip
 }
 
