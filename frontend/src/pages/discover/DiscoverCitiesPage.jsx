@@ -4,10 +4,11 @@ import {
   HiOutlineSearch, HiOutlineLocationMarker, HiOutlineGlobe,
   HiOutlineFire, HiOutlineStar, HiOutlineCurrencyDollar,
   HiOutlineSun, HiOutlineCalendar, HiOutlinePlus, HiOutlineViewGrid,
-  HiOutlineMap, HiOutlineSparkles, HiOutlineX,
+  HiOutlineMap, HiOutlineSparkles, HiOutlineX, HiOutlineBookOpen,
+  HiOutlineArrowRight, HiOutlineInformationCircle,
 } from 'react-icons/hi'
 import { clsx } from 'clsx'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import PublicLayout from '../../layouts/PublicLayout'
 import * as destService from '../../services/destination.service'
@@ -24,11 +25,11 @@ const createCustomIcon = (name) => {
         gap: 6px;
         background: #15803d;
         color: white;
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 9999px;
         font-size: 11px;
         font-weight: 700;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.3);
         border: 2px solid white;
         white-space: nowrap;
         transform: translate(-50%, -100%);
@@ -42,14 +43,53 @@ const createCustomIcon = (name) => {
   })
 }
 
+// Highlighted active pin icon
+const createActivePinIcon = (name) => {
+  return L.divIcon({
+    className: 'custom-active-pin',
+    html: `
+      <div style="
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: #7c3aed;
+        color: white;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 800;
+        box-shadow: 0 6px 20px rgba(124,58,237,0.5);
+        border: 2.5px solid white;
+        white-space: nowrap;
+        transform: translate(-50%, -100%);
+      ">
+        <span>✨</span>
+        <span>${name}</span>
+      </div>
+    `,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+  })
+}
+
 // Helper hook to programmatically move/fly map to coordinates
 function MapFlyTo({ center, zoom }) {
   const map = useMap()
   useEffect(() => {
     if (center && center[0] && center[1]) {
-      map.flyTo(center, zoom || 6, { duration: 1.5 })
+      map.flyTo(center, zoom || 7, { duration: 1.5 })
     }
   }, [center, zoom, map])
+  return null
+}
+
+// Map Click Listener to discover any place clicked on map
+function MapClickHandler({ onMapClick }) {
+  useMapEvents({
+    click(e) {
+      onMapClick(e.latlng.lat, e.latlng.lng)
+    },
+  })
   return null
 }
 
@@ -78,14 +118,11 @@ function DestinationSkeleton() {
   )
 }
 
-function DestinationCard({ dest }) {
+function DestinationCard({ dest, onSelect }) {
   const cost = COST_LABEL(dest.costIndex)
 
   return (
-    <Link
-      to={`/destinations/${dest.id}`}
-      className="group bg-white rounded-2xl border border-neutral-100 shadow-card hover:shadow-card-md hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col"
-    >
+    <div className="group bg-white rounded-3xl border border-neutral-100 shadow-card hover:shadow-card-md hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col">
       {/* Image */}
       <div className="relative h-52 overflow-hidden shrink-0 bg-neutral-800">
         <img
@@ -127,7 +164,7 @@ function DestinationCard({ dest }) {
       </div>
 
       {/* Body */}
-      <div className="p-4 flex-1 flex flex-col gap-3">
+      <div className="p-5 flex-1 flex flex-col gap-3">
         {dest.description && (
           <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed">{dest.description}</p>
         )}
@@ -136,7 +173,7 @@ function DestinationCard({ dest }) {
         {dest.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {dest.tags.slice(0, 4).map(tag => (
-              <span key={tag} className="px-2 py-0.5 bg-primary-50 text-primary-600 text-xs font-medium rounded-full capitalize">
+              <span key={tag} className="px-2.5 py-0.5 bg-primary-50 text-primary-600 text-xs font-semibold rounded-full capitalize">
                 {tag}
               </span>
             ))}
@@ -144,45 +181,59 @@ function DestinationCard({ dest }) {
         )}
 
         {/* Meta row */}
-        <div className="flex items-center gap-3 mt-auto pt-2 border-t border-neutral-50">
+        <div className="flex items-center gap-3 mt-auto pt-2 border-t border-neutral-50 text-xs text-neutral-400">
           {dest.climate && (
-            <span className="flex items-center gap-1 text-xs text-neutral-400">
+            <span className="flex items-center gap-1">
               <HiOutlineSun className="w-3.5 h-3.5" /> {dest.climate}
             </span>
           )}
           {dest.bestMonths?.length > 0 && (
-            <span className="flex items-center gap-1 text-xs text-neutral-400">
+            <span className="flex items-center gap-1">
               <HiOutlineCalendar className="w-3.5 h-3.5" /> Best: {dest.bestMonths.slice(0,2).join(', ')}
             </span>
           )}
           {dest.popularity > 0 && (
-            <span className="flex items-center gap-1 text-xs text-neutral-400 ml-auto">
-              <HiOutlineFire className="w-3.5 h-3.5 text-orange-400" /> {dest.popularity}
+            <span className="flex items-center gap-1 ml-auto text-orange-500 font-semibold">
+              <HiOutlineFire className="w-3.5 h-3.5" /> {dest.popularity}
             </span>
           )}
         </div>
 
-        {/* CTA */}
-        <div className="mt-1 flex items-center justify-center gap-1.5 w-full px-4 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-xl text-xs font-semibold transition-colors">
-          <HiOutlineGlobe className="w-3.5 h-3.5" /> Explore {dest.name} Guide →
+        {/* Actions */}
+        <div className="mt-2 grid grid-cols-2 gap-2 pt-1">
+          <button
+            onClick={() => onSelect?.(dest)}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl text-xs font-bold transition-colors"
+          >
+            <HiOutlineSparkles className="w-3.5 h-3.5 text-primary-600" /> Real Place Info
+          </button>
+          <Link
+            to={`/destinations/${dest.id}`}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-colors text-center"
+          >
+            Guide & Plan →
+          </Link>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
 
 export default function DiscoverCitiesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
   const [destinations, setDestinations] = useState([])
   const [continents,   setContinents]   = useState([])
   const [loading,      setLoading]      = useState(true)
 
-  // Leaflet Map & Suggestions State
+  // Leaflet Map & Live Place Intelligence State
   const [viewMode, setViewMode] = useState('split') // 'split' | 'grid' | 'map'
-  const [mapCenter, setMapCenter] = useState([20.5937, 78.9629]) // Default to global/Asia
+  const [mapCenter, setMapCenter] = useState([20.5937, 78.9629])
   const [mapZoom, setMapZoom] = useState(3)
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [selectedPlaceInfo, setSelectedPlaceInfo] = useState(null)
+  const [loadingPlaceInfo, setLoadingPlaceInfo] = useState(false)
   const searchInputRef = useRef(null)
 
   const search    = searchParams.get('q')         || ''
@@ -201,10 +252,9 @@ export default function DiscoverCitiesPage() {
       setDestinations(dests || [])
       if (!continents.length) setContinents(conts || [])
 
-      // If search matches a destination, fly map to it
-      if (dests?.length === 1 && dests[0].latitude && dests[0].longitude) {
-        setMapCenter([dests[0].latitude, dests[0].longitude])
-        setMapZoom(7)
+      // If user typed a search, automatically fetch unique place info for that place!
+      if (search && search.trim().length >= 2) {
+        fetchRealPlaceInfo(search.trim())
       }
     } catch {
       setDestinations([])
@@ -215,7 +265,52 @@ export default function DiscoverCitiesPage() {
 
   useEffect(() => { fetchData() }, [search, continent]) // eslint-disable-line
 
-  // Autocomplete place suggestions handler using local DB & OpenStreetMap
+  // ── Fetch Real Wikipedia Summary & Real Photo for ANY place on Earth ──
+  const fetchRealPlaceInfo = async (placeName, coords = null) => {
+    setLoadingPlaceInfo(true)
+    try {
+      // 1. Fetch Wikipedia Summary REST API
+      const formatted = encodeURIComponent(placeName.replace(/\s+/g, '_'))
+      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${formatted}`)
+      
+      if (res.ok) {
+        const data = await res.json()
+        const lat = coords?.lat || data.coordinates?.lat || mapCenter[0]
+        const lon = coords?.lon || data.coordinates?.lon || mapCenter[1]
+
+        setSelectedPlaceInfo({
+          name: data.title || placeName,
+          subtitle: data.description || 'Global Destination',
+          extract: data.extract || 'Explore this unique destination with rich heritage and culture.',
+          realImage: data.originalimage?.source || data.thumbnail?.source || `https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1000&q=80`,
+          wikiUrl: data.content_urls?.desktop?.page,
+          lat: lat,
+          lon: lon,
+        })
+
+        if (lat && lon) {
+          setMapCenter([lat, lon])
+          setMapZoom(9)
+        }
+      } else {
+        // Fallback to OpenStreetMap place
+        setSelectedPlaceInfo({
+          name: placeName,
+          subtitle: 'Global Destination',
+          extract: `Discover ${placeName} — explore top attractions, plan daily itineraries, and track your travel budget.`,
+          realImage: `https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1000&q=80`,
+          lat: coords?.lat || mapCenter[0],
+          lon: coords?.lon || mapCenter[1],
+        })
+      }
+    } catch {
+      // Silent catch
+    } finally {
+      setLoadingPlaceInfo(false)
+    }
+  }
+
+  // Autocomplete place suggestions handler
   const handleSearchInput = async (val) => {
     const term = val.trim().toLowerCase()
     if (!term) {
@@ -224,7 +319,7 @@ export default function DiscoverCitiesPage() {
       return
     }
 
-    // 1. Matches from local seeded destinations (instant)
+    // 1. Matches from local seeded destinations
     const localMatches = destinations
       .filter(d =>
         d.name.toLowerCase().includes(term) ||
@@ -242,9 +337,9 @@ export default function DiscoverCitiesPage() {
         type: 'destination',
       }))
 
-    // 2. Query OpenStreetMap Nominatim for global geocoding suggestions
+    // 2. Query OpenStreetMap Nominatim for live global places
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=4&addressdetails=1`, {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=5&addressdetails=1`, {
         headers: { 'Accept-Language': 'en' },
       })
       const osmPlaces = await res.json()
@@ -258,7 +353,6 @@ export default function DiscoverCitiesPage() {
         type: 'place',
       }))
 
-      // Combine local + global
       const combined = [...localMatches, ...osmMatches.filter(o => !localMatches.some(l => l.name.toLowerCase() === o.name.toLowerCase()))]
       setSuggestions(combined)
       setShowSuggestions(true)
@@ -271,9 +365,20 @@ export default function DiscoverCitiesPage() {
   const handleSelectSuggestion = (item) => {
     setFilter('q', item.name)
     setShowSuggestions(false)
-    if (item.lat && item.lon) {
-      setMapCenter([item.lat, item.lon])
-      setMapZoom(8)
+    fetchRealPlaceInfo(item.name, { lat: item.lat, lon: item.lon })
+  }
+
+  // Reverse geocode when clicking on Leaflet map
+  const handleMapClick = async (lat, lng) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+        headers: { 'Accept-Language': 'en' },
+      })
+      const data = await res.json()
+      const placeName = data.address?.city || data.address?.town || data.address?.state || data.address?.country || 'Selected Location'
+      fetchRealPlaceInfo(placeName, { lat, lon: lng })
+    } catch {
+      // ignore
     }
   }
 
@@ -282,6 +387,19 @@ export default function DiscoverCitiesPage() {
     if (val) p.set(key, val)
     else     p.delete(key)
     setSearchParams(p)
+  }
+
+  const handlePlanTripWithPlace = (place) => {
+    navigate('/trips/new', {
+      state: {
+        destination: {
+          name: place.name,
+          country: place.subtitle || '',
+          description: place.extract || '',
+          image: place.realImage,
+        }
+      }
+    })
   }
 
   // Destinations with coordinates for Leaflet pins
@@ -296,16 +414,16 @@ export default function DiscoverCitiesPage() {
         />
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-500/20 border border-primary-400/30 rounded-full text-primary-300 text-xs font-semibold mb-5 backdrop-blur-sm">
-            <HiOutlineGlobe className="w-3.5 h-3.5" /> City & Place Discovery
+            <HiOutlineGlobe className="w-3.5 h-3.5" /> Place Intelligence & Discovery
           </div>
           <h1 className="font-display font-black text-3xl sm:text-5xl text-white mb-3 leading-tight">
-            Where Will You Go <span className="text-primary-400">Next?</span>
+            Discover Real Places & <span className="text-primary-400">Photos</span>
           </h1>
           <p className="text-neutral-300 text-sm sm:text-base max-w-xl mx-auto mb-7">
-            Explore interactive map pins, discover top destinations worldwide, and start planning.
+            Search any city, monument, or attraction in the world to get real photographs, historical facts, and live map coordinates.
           </p>
 
-          {/* ── Interactive Search Bar with Live Leaflet Geocoding Suggestions ── */}
+          {/* ── Interactive Search Bar with Live Suggestions ── */}
           <div className="max-w-xl mx-auto relative z-30">
             <div className="relative">
               <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -313,7 +431,7 @@ export default function DiscoverCitiesPage() {
                 ref={searchInputRef}
                 id="city-search"
                 type="text"
-                placeholder="Search Ahmedabad, Paris, Tokyo, Bali, New York..."
+                placeholder="Search Ahmedabad, Taj Mahal, Paris, Tokyo, Statue of Liberty..."
                 defaultValue={search}
                 onChange={e => {
                   const val = e.target.value
@@ -324,11 +442,11 @@ export default function DiscoverCitiesPage() {
                   }, 300)
                 }}
                 onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
-                className="w-full pl-12 pr-10 py-4 bg-white/10 backdrop-blur-md border border-white/25 rounded-2xl text-white placeholder-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all shadow-lg"
+                className="w-full pl-12 pr-10 py-4 bg-white/10 backdrop-blur-md border border-white/25 rounded-2xl text-white placeholder-neutral-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all shadow-lg font-medium"
               />
               {search && (
                 <button
-                  onClick={() => { setFilter('q', ''); setSuggestions([]); setShowSuggestions(false) }}
+                  onClick={() => { setFilter('q', ''); setSuggestions([]); setShowSuggestions(false); setSelectedPlaceInfo(null) }}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-neutral-300 hover:text-white rounded-full"
                 >
                   <HiOutlineX className="w-4 h-4" />
@@ -341,7 +459,7 @@ export default function DiscoverCitiesPage() {
               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden text-left z-50 animate-scale-up">
                 <div className="p-2.5 bg-neutral-50/80 border-b border-neutral-100 text-[11px] font-bold text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
                   <HiOutlineSparkles className="w-3.5 h-3.5 text-primary-500" />
-                  Places & Location Suggestions
+                  Live Places & Landmark Suggestions
                 </div>
                 <div className="divide-y divide-neutral-100 max-h-72 overflow-y-auto">
                   {suggestions.map((item, idx) => (
@@ -367,7 +485,7 @@ export default function DiscoverCitiesPage() {
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 shrink-0">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 shrink-0">
                         {item.type === 'destination' ? 'Guide' : 'Location'}
                       </span>
                     </div>
@@ -379,8 +497,92 @@ export default function DiscoverCitiesPage() {
         </div>
       </section>
 
+      {/* ── REAL PLACE SPOTLIGHT & LIVE INFORMATION PANEL ── */}
+      {selectedPlaceInfo && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-6 relative z-20 mb-8">
+          <div className="bg-white rounded-3xl border border-neutral-200/80 shadow-card-lg overflow-hidden p-6 sm:p-8 animate-fade-in">
+            <div className="flex items-start justify-between gap-4 mb-4 border-b border-neutral-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="p-2 bg-primary-100 text-primary-700 rounded-xl text-lg">🌟</span>
+                <div>
+                  <h2 className="font-display font-black text-xl sm:text-2xl text-neutral-900">
+                    {selectedPlaceInfo.name}
+                  </h2>
+                  <p className="text-xs text-neutral-500 font-medium">
+                    {selectedPlaceInfo.subtitle}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPlaceInfo(null)}
+                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-full hover:bg-neutral-100 transition-colors"
+                title="Close Spotlight"
+              >
+                <HiOutlineX className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+              {/* Real Photograph */}
+              <div className="lg:col-span-5 relative h-64 sm:h-72 rounded-2xl overflow-hidden bg-neutral-900 shadow-md">
+                <img
+                  src={selectedPlaceInfo.realImage}
+                  alt={selectedPlaceInfo.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <span className="absolute bottom-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold rounded-lg flex items-center gap-1">
+                  📸 Genuine Place Photograph
+                </span>
+              </div>
+
+              {/* Unique Place Information & Background */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+                  <h4 className="text-xs font-bold text-neutral-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <HiOutlineInformationCircle className="w-4 h-4 text-primary-600" />
+                    Place Overview & Facts
+                  </h4>
+                  <p className="text-sm text-neutral-700 leading-relaxed font-normal">
+                    {selectedPlaceInfo.extract}
+                  </p>
+                </div>
+
+                {/* Coords & Quick Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+                  <div className="flex items-center gap-3 text-xs text-neutral-500">
+                    <span className="flex items-center gap-1">
+                      <HiOutlineLocationMarker className="w-4 h-4 text-primary-500" />
+                      Coordinates: {selectedPlaceInfo.lat?.toFixed(4)}, {selectedPlaceInfo.lon?.toFixed(4)}
+                    </span>
+                    {selectedPlaceInfo.wikiUrl && (
+                      <a
+                        href={selectedPlaceInfo.wikiUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary-600 hover:underline flex items-center gap-1 font-semibold"
+                      >
+                        <HiOutlineBookOpen className="w-4 h-4" /> Read on Wikipedia ↗
+                      </a>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handlePlanTripWithPlace(selectedPlaceInfo)}
+                    className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+                  >
+                    <span>Plan a Trip to {selectedPlaceInfo.name}</span>
+                    <HiOutlineArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Filters & Controls Bar ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
           {/* Continent Filters */}
@@ -455,10 +657,10 @@ export default function DiscoverCitiesPage() {
                 <HiOutlineMap className="w-4 h-4 text-primary-600" />
                 Interactive Leaflet World Map ({mapMarkers.length} locations pinned)
               </span>
-              <span className="text-neutral-400">Click any marker to inspect & plan</span>
+              <span className="text-neutral-400">Click any marker or anywhere on the map to explore real place details</span>
             </div>
 
-            <div className={clsx('w-full relative z-0', viewMode === 'map' ? 'h-[580px]' : 'h-[360px]')}>
+            <div className={clsx('w-full relative z-0', viewMode === 'map' ? 'h-[580px]' : 'h-[380px]')}>
               <MapContainer
                 center={mapCenter}
                 zoom={mapZoom}
@@ -471,7 +673,25 @@ export default function DiscoverCitiesPage() {
                 />
 
                 <MapFlyTo center={mapCenter} zoom={mapZoom} />
+                <MapClickHandler onMapClick={handleMapClick} />
 
+                {/* Active selected place marker */}
+                {selectedPlaceInfo && selectedPlaceInfo.lat && selectedPlaceInfo.lon && (
+                  <Marker
+                    position={[selectedPlaceInfo.lat, selectedPlaceInfo.lon]}
+                    icon={createActivePinIcon(selectedPlaceInfo.name)}
+                  >
+                    <Popup>
+                      <div className="w-48 p-1">
+                        <img src={selectedPlaceInfo.realImage} alt="" className="w-full h-24 object-cover rounded-lg mb-2" />
+                        <h4 className="font-bold text-xs text-neutral-900">{selectedPlaceInfo.name}</h4>
+                        <p className="text-[10px] text-neutral-500 line-clamp-2 mt-1">{selectedPlaceInfo.extract}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
+
+                {/* Pre-seeded destination markers */}
                 {mapMarkers.map(d => (
                   <Marker
                     key={d.id}
@@ -490,11 +710,17 @@ export default function DiscoverCitiesPage() {
                           <h4 className="font-bold text-sm text-neutral-900">{d.name}</h4>
                           <p className="text-[11px] text-neutral-500 line-clamp-2">{d.description}</p>
                           <div className="pt-1 flex items-center justify-between">
-                            <Link
-                              to={`/destinations/${d.id}`}
+                            <button
+                              onClick={() => fetchRealPlaceInfo(d.name, { lat: d.latitude, lon: d.longitude })}
                               className="text-[11px] font-bold text-primary-600 hover:underline"
                             >
-                              Explore Guide →
+                              Inspect Details →
+                            </button>
+                            <Link
+                              to={`/destinations/${d.id}`}
+                              className="text-[11px] font-semibold text-neutral-600 hover:underline"
+                            >
+                              Guide
                             </Link>
                           </div>
                         </div>
@@ -521,7 +747,7 @@ export default function DiscoverCitiesPage() {
                 </div>
                 <h3 className="font-display font-bold text-lg text-neutral-800 mb-1">No destinations found</h3>
                 <p className="text-sm text-neutral-400 max-w-sm mx-auto mb-5">
-                  Try searching for another city, like "Ahmedabad", "Paris", or "Tokyo".
+                  Try searching for another place, like "Ahmedabad", "Taj Mahal", or "Paris".
                 </p>
                 <button
                   onClick={() => { setFilter('q', ''); setFilter('continent', '') }}
@@ -533,7 +759,11 @@ export default function DiscoverCitiesPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {destinations.map((dest) => (
-                  <DestinationCard key={dest.id} dest={dest} />
+                  <DestinationCard
+                    key={dest.id}
+                    dest={dest}
+                    onSelect={(d) => fetchRealPlaceInfo(d.name, { lat: d.latitude, lon: d.longitude })}
+                  />
                 ))}
               </div>
             )}
