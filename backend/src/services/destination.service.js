@@ -3,14 +3,22 @@ import prisma from '../config/database.js'
 /**
  * Get popular destinations (sorted by popularity)
  */
-export const getPopularDestinations = async ({ limit = 12, continent, search } = {}) => {
+export const getPopularDestinations = async ({ limit = 50, continent, search } = {}) => {
+  let searchTerm = search ? search.trim().toLowerCase() : ''
+
+  // Common typo / alias normalization
+  if (searchTerm.includes('ahemedabad') || searchTerm.includes('amdavad')) {
+    searchTerm = 'ahmedabad'
+  }
+
   const where = {
     ...(continent && { continent }),
-    ...(search && {
+    ...(searchTerm && {
       OR: [
-        { name:    { contains: search, mode: 'insensitive' } },
-        { country: { contains: search, mode: 'insensitive' } },
-        { tags:    { hasSome: [search] } },
+        { name:        { contains: searchTerm, mode: 'insensitive' } },
+        { country:     { contains: searchTerm, mode: 'insensitive' } },
+        { description: { contains: searchTerm, mode: 'insensitive' } },
+        { tags:        { hasSome: [searchTerm, search.trim().toLowerCase()] } },
       ],
     }),
   }

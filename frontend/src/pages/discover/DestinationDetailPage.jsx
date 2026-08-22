@@ -49,6 +49,34 @@ const HIGHLIGHTS_DATABASE = {
     { title: 'Vatican Museums & Sistine Chapel', category: 'CULTURE', cost: 27, emoji: '🎨', desc: 'Marvel at Michelangelo\'s ceiling frescoes and world-renowned classical sculptures.' },
     { title: 'Trevi Fountain & Spanish Steps', category: 'SIGHTSEEING', cost: 0, emoji: '⛲', desc: 'Toss a coin into Rome’s most iconic fountain to ensure your return to the Eternal City.' },
   ],
+  ahmedabad: [
+    { title: 'Sabarmati Ashram (Gandhi Smarak)', category: 'CULTURE', cost: 0, emoji: '🕊️', desc: 'Historic headquarters of Mahatma Gandhi along the peaceful Sabarmati River with museum & artifacts.' },
+    { title: 'Atal Pedestrian Bridge & Riverfront Walk', category: 'SIGHTSEEING', cost: 1, emoji: '🌉', desc: 'Iconic modern engineering marvel offering scenic riverfront panoramas and evening illuminations.' },
+    { title: 'Adalaj Stepwell (Rudabai Vav)', category: 'CULTURE', cost: 0, emoji: '🏛️', desc: 'Intricately carved 15th-century subterranean architectural marvel and UNESCO heritage highlight.' },
+    { title: 'Sidi Saiyyed Mosque & Tree of Life Jali', category: 'CULTURE', cost: 0, emoji: '🕌', desc: 'World-famous delicate marble latticework jali that has become the emblem of Ahmedabad.' },
+    { title: 'Manek Chowk Street Food & Night Market', category: 'FOOD_DINING', cost: 5, emoji: '🥘', desc: 'Bustling night square serving Gwalior dosa, chocolate sandwiches, kulfi, and Gujarati delicacies.' },
+    { title: 'Kankaria Lakefront & Balvatika', category: 'ENTERTAINMENT', cost: 2, emoji: '🎡', desc: 'Vibrant circular lake with balloon safari, toy train, zoo, and waterfront musical fountain.' },
+    { title: 'Gujarat Science City & Aquatic Gallery', category: 'ADVENTURE', cost: 8, emoji: '🎪', desc: 'State-of-the-art interactive science pavilions, IMAX 3D theatre, and massive shark tunnel.' },
+  ],
+  mumbai: [
+    { title: 'Gateway of India & Taj Mahal Palace', category: 'SIGHTSEEING', cost: 0, emoji: '🏛️', desc: 'Iconic 20th-century arch monument overlooking the Arabian Sea alongside the historic hotel.' },
+    { title: 'Marine Drive Sunset (Queen\'s Necklace)', category: 'NATURE', cost: 0, emoji: '🌊', desc: 'Picturesque 3.6-kilometer seaside promenade offering sea breezes and glittering evening skyline.' },
+    { title: 'Elephanta Caves Island Excursion', category: 'CULTURE', cost: 10, emoji: '🗿', desc: 'UNESCO World Heritage rock-cut cave temples dedicated to Lord Shiva reachable by ferry.' },
+    { title: 'Chhatrapati Shivaji Maharaj Terminus (CSMT)', category: 'CULTURE', cost: 0, emoji: '🚂', desc: 'Majestic Victorian Gothic architectural masterpiece and bustling central railway station.' },
+  ],
+  delhi: [
+    { title: 'Qutub Minar & Mehrauli Heritage Complex', category: 'CULTURE', cost: 8, emoji: '🗼', desc: 'World’s tallest brick minaret standing 73 meters tall surrounded by ancient ruins.' },
+    { title: 'Humayun’s Tomb & Charbagh Gardens', category: 'CULTURE', cost: 8, emoji: '🕌', desc: 'Splendid red sandstone Mughal garden tomb that inspired the Taj Mahal.' },
+    { title: 'Chandni Chowk & Old Delhi Food Crawl', category: 'FOOD_DINING', cost: 6, emoji: '🍛', desc: 'Savor legendary parathas, jalebis, kebabs, and chaat through vibrant historic alleys.' },
+  ],
+  jaipur: [
+    { title: 'Amber Palace & Maota Lake', category: 'CULTURE', cost: 10, emoji: '🏰', desc: 'Magnificent hilltop fortress with Sheesh Mahal (Mirror Palace) and elephant pathways.' },
+    { title: 'Hawa Mahal (Palace of Winds)', category: 'SIGHTSEEING', cost: 5, emoji: '🪟', desc: 'Extraordinary pink honeycomb facade with 953 intricately carved windows.' },
+  ],
+  goa: [
+    { title: 'Calangute & Baga Beach Water Sports', category: 'ADVENTURE', cost: 25, emoji: '🏄', desc: 'Parasailing, jet skiing, and banana boat rides on Goa\'s most famous golden coast.' },
+    { title: 'Basilica of Bom Jesus & Old Goa', category: 'CULTURE', cost: 0, emoji: '⛪', desc: 'Historic Portuguese colonial churches and UNESCO World Heritage spiritual center.' },
+  ],
 }
 
 export default function DestinationDetailPage() {
