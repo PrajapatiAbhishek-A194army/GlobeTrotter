@@ -40,6 +40,9 @@ import CalendarPage from './pages/trips/CalendarPage'
 // Phase 10 — Profile
 import ProfilePage from './pages/profile/ProfilePage'
 
+// Phase 11 — Admin
+import AdminPage from './pages/admin/AdminPage'
+
 // Auth guard
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -149,7 +152,7 @@ function AppRoutes() {
 
       {/* ── Phase 11 — Admin (admin only) ── */}
       <Route path="/admin" element={
-        <ProtectedRoute adminOnly><PlaceholderApp title="Admin Dashboard" /></ProtectedRoute>
+        <ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>
       }/>
 
       {/* ── 404 ── */}

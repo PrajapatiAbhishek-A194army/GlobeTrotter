@@ -47,5 +47,10 @@ budgetRouter.get('/', budgetController.getBudget)
 budgetRouter.patch('/', budgetController.updateBudget)
 router.use('/trips/:tripId/budget', budgetRouter)
 
+// Phase 11: Admin
+import adminRoutes from './admin.routes.js'
+router.use('/admin', adminRoutes)
+
 export default router
+
 
