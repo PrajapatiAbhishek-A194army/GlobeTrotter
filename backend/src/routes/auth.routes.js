@@ -77,6 +77,8 @@ const upload = multer({
   },
 })
 
+import { optionalAuth } from '../middleware/auth.js'
+
 // ── Routes ─────────────────────────────────────────────────────────────────────
 
 // Public
@@ -85,10 +87,14 @@ router.post('/login',           loginValidation,            validate, authContro
 router.post('/forgot-password', forgotPasswordValidation,  validate, authController.forgotPassword)
 router.patch('/reset-password/:token', resetPasswordValidation, validate, authController.resetPassword)
 
+// OTP Verification (Public / Protected)
+router.post('/send-otp',        optionalAuth, authController.sendOtp)
+router.post('/verify-otp',      optionalAuth, authController.verifyOtp)
+
 // Protected
 router.get  ('/me',              protect, authController.getMe)
 router.patch('/update-profile',  protect, upload.single('avatar'), authController.updateProfile)
 router.post ('/avatar',          protect, upload.single('avatar'), authController.uploadAvatar)
-router.patch('/change-password', protect, changePasswordValidation, validate, authController.changePassword)
+router.patch('/change-password', protect, authController.changePassword)
 
 export default router

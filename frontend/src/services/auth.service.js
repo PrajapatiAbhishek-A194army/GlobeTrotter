@@ -46,10 +46,26 @@ export const resetPassword = async (token, password) => {
 }
 
 /**
- * Change password while logged in
+ * Change password while logged in (supports optional OTP)
  */
-export const changePassword = async (currentPassword, newPassword) => {
-  const { data } = await api.patch('/auth/change-password', { currentPassword, newPassword })
+export const changePassword = async (currentPassword, newPassword, otp) => {
+  const { data } = await api.patch('/auth/change-password', { currentPassword, newPassword, otp })
+  return data
+}
+
+/**
+ * Send OTP verification code to user email
+ */
+export const sendPasswordOtp = async (email = null) => {
+  const { data } = await api.post('/auth/send-otp', { email })
+  return data
+}
+
+/**
+ * Verify OTP and set new password
+ */
+export const verifyOtp = async (email, otp, newPassword) => {
+  const { data } = await api.post('/auth/verify-otp', { email, otp, newPassword })
   return data
 }
 
@@ -73,4 +89,4 @@ export const uploadAvatar = async (file) => {
   return data.data.user
 }
 
-export default { signup, login, getMe, forgotPassword, resetPassword, changePassword, updateProfile, uploadAvatar }
+export default { signup, login, getMe, forgotPassword, resetPassword, changePassword, updateProfile, uploadAvatar, sendPasswordOtp, verifyOtp }

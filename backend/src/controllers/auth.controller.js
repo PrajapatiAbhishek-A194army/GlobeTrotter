@@ -69,10 +69,48 @@ export const resetPassword = async (req, res, next) => {
   }
 }
 
+// POST /api/auth/send-otp
+export const sendOtp = async (req, res, next) => {
+  try {
+    const userId = req.user?.id || null
+    const email  = req.body.email || (req.user?.email) || null
+
+    if (!userId && !email) {
+      return res.status(400).json({ success: false, message: 'Email or authentication required.' })
+    }
+
+    const result = await authService.sendPasswordOtp({ email, userId })
+    res.json({
+      success: true,
+      message: `A 6-digit verification code has been sent to ${result.email}.`,
+      data: result,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// POST /api/auth/verify-otp
+export const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body
+    const userId = req.user?.id || null
+    await authService.verifyOtpAndChangePassword({ email, userId, otp, newPassword })
+    res.json({ success: true, message: 'Password updated successfully with OTP!' })
+  } catch (err) {
+    next(err)
+  }
+}
+
 // PATCH /api/auth/change-password  [protected]
 export const changePassword = async (req, res, next) => {
   try {
-    await authService.changePassword(req.user.id, req.body.currentPassword, req.body.newPassword)
+    await authService.changePassword(
+      req.user.id,
+      req.body.currentPassword,
+      req.body.newPassword,
+      req.body.otp
+    )
     res.json({ success: true, message: 'Password changed successfully.' })
   } catch (err) {
     next(err)

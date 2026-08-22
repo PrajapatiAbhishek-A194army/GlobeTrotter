@@ -187,10 +187,87 @@ export const uploadAvatar = async (userId, avatarPath) => {
   return updated
 }
 
+import { sendOtpEmail } from '../utils/email.js'
+
 /**
- * Change authenticated user's password
+ * Send 6-digit OTP to user's email for password change/reset
  */
-export const changePassword = async (userId, currentPassword, newPassword) => {
+export const sendPasswordOtp = async ({ email, userId }) => {
+  let user = null
+  if (userId) {
+    user = await prisma.user.findUnique({ where: { id: userId } })
+  } else if (email) {
+    user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } })
+  }
+
+  if (!user) throw createError('Account not found.', 404)
+
+  // Generate 6-digit numeric OTP (e.g. 100000 - 999999)
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
+  const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex')
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      resetToken:          hashedOtp,
+      resetTokenExpiresAt: expiresAt,
+    },
+  })
+
+  // Send via email & console
+  await sendOtpEmail(user.email, otpCode, user.firstName)
+
+  return {
+    email: user.email,
+    expiresInSeconds: 600,
+    devOtpPreview: process.env.NODE_ENV !== 'production' ? otpCode : undefined,
+  }
+}
+
+/**
+ * Verify 6-digit OTP and update password
+ */
+export const verifyOtpAndChangePassword = async ({ email, userId, otp, newPassword }) => {
+  if (!otp || otp.length !== 6) {
+    throw createError('Please provide a valid 6-digit OTP code.', 400)
+  }
+
+  const hashedOtp = crypto.createHash('sha256').update(otp.trim()).digest('hex')
+
+  const whereClause = {
+    resetToken:          hashedOtp,
+    resetTokenExpiresAt: { gt: new Date() },
+    ...(userId ? { id: userId } : { email: email.toLowerCase().trim() }),
+  }
+
+  const user = await prisma.user.findFirst({ where: whereClause })
+  if (!user) {
+    throw createError('Invalid or expired OTP verification code. Please request a new code.', 400)
+  }
+
+  const hashed = await hashPassword(newPassword)
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password:            hashed,
+      resetToken:          null,
+      resetTokenExpiresAt: null,
+    },
+  })
+
+  return { email: user.email }
+}
+
+/**
+ * Change authenticated user's password (supports currentPassword or OTP verification)
+ */
+export const changePassword = async (userId, currentPassword, newPassword, otp) => {
+  if (otp) {
+    return verifyOtpAndChangePassword({ userId, otp, newPassword })
+  }
+
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) throw createError('User not found.', 404)
 
