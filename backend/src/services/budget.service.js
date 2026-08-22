@@ -29,16 +29,36 @@ export const getBudget = async (tripId, userId) => {
     })
   }
 
-  // Aggregate actual spending from activities
-  const activitySpend = await prisma.activity.aggregate({
+  // Aggregate actual spending and category breakdown from activities
+  const activities = await prisma.activity.findMany({
     where: { stop: { tripId } },
-    _sum: { cost: true },
+    select: { category: true, cost: true },
+  })
+
+  const spendByCategory = {
+    transport: 0,
+    accommodation: 0,
+    meals: 0,
+    activities: 0,
+    other: 0,
+  }
+
+  let totalActualSpend = 0
+  activities.forEach(a => {
+    const c = a.cost || 0
+    totalActualSpend += c
+    if (a.category === 'TRANSPORT') spendByCategory.transport += c
+    else if (a.category === 'ACCOMMODATION') spendByCategory.accommodation += c
+    else if (a.category === 'FOOD_DINING') spendByCategory.meals += c
+    else if (['SIGHTSEEING','ADVENTURE','CULTURE','SHOPPING','ENTERTAINMENT','WELLNESS','NATURE'].includes(a.category)) spendByCategory.activities += c
+    else spendByCategory.other += c
   })
 
   return {
     ...budget,
-    actualSpend: activitySpend._sum.cost || 0,
-    remaining: budget.totalBudget - (activitySpend._sum.cost || 0),
+    actualSpend: totalActualSpend,
+    remaining: Math.max(0, budget.totalBudget - totalActualSpend),
+    spendByCategory,
   }
 }
 
@@ -60,14 +80,34 @@ export const updateBudget = async (tripId, userId, data) => {
     include: { trip: { select: { title: true, status: true } } },
   })
 
-  const activitySpend = await prisma.activity.aggregate({
+  const activities = await prisma.activity.findMany({
     where: { stop: { tripId } },
-    _sum: { cost: true },
+    select: { category: true, cost: true },
+  })
+
+  const spendByCategory = {
+    transport: 0,
+    accommodation: 0,
+    meals: 0,
+    activities: 0,
+    other: 0,
+  }
+
+  let totalActualSpend = 0
+  activities.forEach(a => {
+    const c = a.cost || 0
+    totalActualSpend += c
+    if (a.category === 'TRANSPORT') spendByCategory.transport += c
+    else if (a.category === 'ACCOMMODATION') spendByCategory.accommodation += c
+    else if (a.category === 'FOOD_DINING') spendByCategory.meals += c
+    else if (['SIGHTSEEING','ADVENTURE','CULTURE','SHOPPING','ENTERTAINMENT','WELLNESS','NATURE'].includes(a.category)) spendByCategory.activities += c
+    else spendByCategory.other += c
   })
 
   return {
     ...budget,
-    actualSpend: activitySpend._sum.cost || 0,
-    remaining: budget.totalBudget - (activitySpend._sum.cost || 0),
+    actualSpend: totalActualSpend,
+    remaining: Math.max(0, budget.totalBudget - totalActualSpend),
+    spendByCategory,
   }
 }
