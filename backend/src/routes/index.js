@@ -27,13 +27,16 @@ router.get('/', (req, res) => {
 import authRoutes from './auth.routes.js'
 router.use('/auth', authRoutes)
 
-// Phase 4+:
-// import userRoutes from './user.routes.js'
-// import tripRoutes from './trip.routes.js'
+// Phase 4: Trips & Destinations
+import tripRoutes from './trip.routes.js'
+import destinationRoutes from './destination.routes.js'
+router.use('/trips',        tripRoutes)
+router.use('/destinations', destinationRoutes)
+
+// Phase 5+:
 // import stopRoutes from './stop.routes.js'
 // import activityRoutes from './activity.routes.js'
 // import budgetRoutes from './budget.routes.js'
-// import destinationRoutes from './destination.routes.js'
 // import adminRoutes from './admin.routes.js'
 
 export default router

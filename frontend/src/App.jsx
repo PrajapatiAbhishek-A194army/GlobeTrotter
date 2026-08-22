@@ -14,6 +14,10 @@ import SignupPage         from './pages/auth/SignupPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage  from './pages/auth/ResetPasswordPage'
 
+// Phase 4 — Dashboard
+import DashboardPage from './pages/dashboard/DashboardPage'
+import AppLayout     from './layouts/AppLayout'
+
 // Auth guard
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -34,15 +38,17 @@ const PlaceholderPublic = ({ title }) => (
 )
 
 const PlaceholderApp = ({ title }) => (
-  <div className="flex items-center justify-center min-h-screen bg-surface-secondary">
-    <div className="text-center">
-      <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <span className="text-3xl">🌍</span>
+  <AppLayout>
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <span className="text-3xl">🌍</span>
+        </div>
+        <h1 className="font-display font-bold text-xl text-neutral-800 mb-2">{title}</h1>
+        <p className="text-neutral-500 text-sm">Coming soon — Phase development in progress</p>
       </div>
-      <h1 className="font-display font-bold text-xl text-neutral-800 mb-2">{title}</h1>
-      <p className="text-neutral-500 text-sm">Coming soon — Phase development in progress</p>
     </div>
-  </div>
+  </AppLayout>
 )
 
 // ── Smart route: redirects logged-in users away from /login & /signup ─────────
@@ -76,7 +82,7 @@ function AppRoutes() {
 
       {/* ── Phase 4 — Dashboard (protected) ── */}
       <Route path="/dashboard" element={
-        <ProtectedRoute><PlaceholderApp title="Dashboard" /></ProtectedRoute>
+        <ProtectedRoute><DashboardPage /></ProtectedRoute>
       }/>
 
       {/* ── Phase 5 — Trip Management (protected) ── */}
