@@ -113,10 +113,10 @@ export default function DestinationDetailPage() {
   const handlePlanTrip = () => {
     if (!isAuthenticated) {
       toast('Log in to start planning a trip!', { icon: '🔑' })
-      navigate('/login')
+      navigate('/login', { state: { from: { pathname: `/destinations/${id}` } } })
       return
     }
-    navigate('/trips/new')
+    navigate('/trips/new', { state: { destination: dest } })
   }
 
   return (

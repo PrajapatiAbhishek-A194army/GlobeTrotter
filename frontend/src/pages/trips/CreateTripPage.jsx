@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   HiOutlinePhotograph, HiOutlineCalendar, HiOutlineGlobe,
   HiOutlineLockClosed, HiOutlineArrowLeft, HiOutlineX, HiOutlinePlus,
+  HiOutlineLocationMarker, HiOutlineSparkles,
 } from 'react-icons/hi'
 import { clsx } from 'clsx'
 import toast from 'react-hot-toast'
@@ -20,20 +21,36 @@ const STATUS_OPTIONS = [
 
 export default function CreateTripPage() {
   const navigate = useNavigate()
-  const fileRef = useRef(null)
+  const location = useLocation()
+  const fileRef  = useRef(null)
+
+  const selectedDestination = location.state?.destination || null
 
   const [form, setForm] = useState({
-    title: '',
-    description: '',
+    title:       selectedDestination ? `${selectedDestination.name} Adventure` : '',
+    description: selectedDestination ? (selectedDestination.description || `Exploring ${selectedDestination.name}, ${selectedDestination.country}`) : '',
     startDate: '',
     endDate: '',
     status: 'PLANNING',
     isPublic: false,
   })
   const [coverFile,    setCoverFile]    = useState(null)
-  const [coverPreview, setCoverPreview] = useState(null)
+  const [coverPreview, setCoverPreview] = useState(selectedDestination?.image || null)
   const [errors,       setErrors]       = useState({})
   const [submitting,   setSubmitting]   = useState(false)
+
+  useEffect(() => {
+    if (selectedDestination) {
+      setForm(prev => ({
+        ...prev,
+        title: prev.title || `${selectedDestination.name} Adventure`,
+        description: prev.description || selectedDestination.description || `Exploring ${selectedDestination.name}, ${selectedDestination.country}`,
+      }))
+      if (!coverPreview && selectedDestination.image) {
+        setCoverPreview(selectedDestination.image)
+      }
+    }
+  }, [selectedDestination])
 
   const set = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -70,7 +87,12 @@ export default function CreateTripPage() {
       fd.append('isPublic',    form.isPublic ? 'true' : 'false')
       if (form.startDate) fd.append('startDate', form.startDate)
       if (form.endDate)   fd.append('endDate',   form.endDate)
-      if (coverFile)      fd.append('coverImage', coverFile)
+
+      if (coverFile) {
+        fd.append('coverImage', coverFile)
+      } else if (coverPreview && typeof coverPreview === 'string' && coverPreview.startsWith('http')) {
+        fd.append('coverImage', coverPreview)
+      }
 
       const trip = await tripService.createTrip(fd)
       toast.success('Trip created! 🎉')
@@ -100,17 +122,48 @@ export default function CreateTripPage() {
           <p className="text-sm text-neutral-500 mt-1">Fill in the details to start your adventure.</p>
         </div>
 
+        {/* Destination Pre-fill Banner */}
+        {selectedDestination && (
+          <div className="bg-gradient-to-r from-primary-50 to-emerald-50 border border-primary-100 rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl overflow-hidden bg-neutral-200 shrink-0 shadow-xs">
+              <img
+                src={selectedDestination.image}
+                alt={selectedDestination.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 uppercase tracking-wider">
+                <HiOutlineSparkles className="w-3.5 h-3.5" /> Destination Selected
+              </div>
+              <h3 className="font-display font-bold text-base text-neutral-900 truncate">
+                {selectedDestination.name}, {selectedDestination.country}
+              </h3>
+              <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
+                {selectedDestination.continent} · Cost Index: {selectedDestination.costIndex || 7}/10
+              </p>
+            </div>
+          </div>
+        )}
+
         <form id="create-trip-form" onSubmit={handleSubmit} className="space-y-6">
 
           {/* ── Cover Image ── */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Cover Image <span className="text-neutral-400 font-normal">(optional)</span>
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-neutral-700">
+                Cover Image <span className="text-neutral-400 font-normal">(optional)</span>
+              </label>
+              {selectedDestination && coverPreview === selectedDestination.image && (
+                <span className="text-xs text-primary-600 font-medium">
+                  📸 Default {selectedDestination.name} photo selected
+                </span>
+              )}
+            </div>
             <div
               onClick={() => fileRef.current?.click()}
               className={clsx(
-                'relative w-full h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all overflow-hidden group',
+                'relative w-full h-52 rounded-2xl border-2 border-dashed cursor-pointer transition-all overflow-hidden group',
                 coverPreview
                   ? 'border-transparent'
                   : 'border-neutral-200 hover:border-primary-400 hover:bg-primary-50/30'
@@ -133,7 +186,7 @@ export default function CreateTripPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-2 text-neutral-400">
                   <HiOutlinePhotograph className="w-10 h-10" />
-                  <p className="text-sm font-medium">Click to upload a cover image</p>
+                  <p className="text-sm font-medium">Click to upload a custom cover image</p>
                   <p className="text-xs">JPG, PNG, WebP — max 5 MB</p>
                 </div>
               )}
