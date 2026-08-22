@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { HiOutlineGlobeAlt, HiOutlineMenuAlt3, HiX } from 'react-icons/hi'
+import { HiOutlineGlobeAlt, HiOutlineMenuAlt3, HiX, HiArrowRight } from 'react-icons/hi'
 import { clsx } from 'clsx'
 import Button from './ui/Button'
+import { useAuth } from '../context/AuthContext'
 
 const navLinks = [
   { label: 'Features',     href: '/#features' },
@@ -12,9 +13,10 @@ const navLinks = [
 ]
 
 export default function Navbar() {
-  const [scrolled,     setScrolled]     = useState(false)
-  const [mobileOpen,   setMobileOpen]   = useState(false)
+  const [scrolled,   setScrolled]   = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const { user, isAuthenticated } = useAuth()
 
   // Detect scroll — apply background + shadow
   useEffect(() => {
@@ -29,6 +31,10 @@ export default function Navbar() {
   }, [location])
 
   const isLandingPage = location.pathname === '/'
+
+  const avatarSrc = user?.avatar
+    ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`)
+    : null
 
   return (
     <header
@@ -70,14 +76,35 @@ export default function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Sign in</Button>
-            </Link>
-            <Link to="/signup">
-              <Button variant="primary" size="sm">
-                Get Started Free
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <button
+                  id="go-to-account-btn"
+                  className="flex items-center gap-2.5 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <div className="w-6 h-6 rounded-full bg-white/20 overflow-hidden flex items-center justify-center text-xs font-bold shrink-0">
+                    {avatarSrc ? (
+                      <img src={avatarSrc} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{user?.firstName?.[0] || 'U'}</span>
+                    )}
+                  </div>
+                  <span>Go to Account</span>
+                  <HiArrowRight className="w-4 h-4 text-primary-200" />
+                </button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">Sign in</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button variant="primary" size="sm">
+                    Get Started Free
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -113,12 +140,23 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="pt-3 border-t border-neutral-100 flex flex-col gap-2 mt-2">
-            <Link to="/login" className="block">
-              <Button variant="ghost" size="md" fullWidth>Sign in</Button>
-            </Link>
-            <Link to="/signup" className="block">
-              <Button variant="primary" size="md" fullWidth>Get Started Free</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard" className="block">
+                <Button variant="primary" size="md" fullWidth className="flex items-center justify-center gap-2">
+                  <span>Go to Account</span>
+                  <HiArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="block">
+                  <Button variant="ghost" size="md" fullWidth>Sign in</Button>
+                </Link>
+                <Link to="/signup" className="block">
+                  <Button variant="primary" size="md" fullWidth>Get Started Free</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

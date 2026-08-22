@@ -4,6 +4,7 @@ import {
   HiOutlineMap, HiOutlineCurrencyDollar, HiOutlineUsers,
 } from 'react-icons/hi'
 import Button from '../../components/ui/Button'
+import { useAuth } from '../../context/AuthContext'
 
 const stats = [
   { value: '50K+',  label: 'Trips Created',    icon: HiOutlineMap },
@@ -20,6 +21,7 @@ const FloatingCard = ({ className, children }) => (
 )
 
 export default function HeroSection() {
+  const { isAuthenticated, user } = useAuth()
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-white via-primary-50/40 to-accent-50/30">
 
@@ -74,22 +76,37 @@ export default function HeroSection() {
 
             {/* CTAs */}
             <div className="flex flex-wrap items-center gap-4 mb-12">
-              <Link to="/signup">
+              {isAuthenticated ? (
+                <Link to="/dashboard">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    rightIcon={<HiArrowRight className="w-5 h-5" />}
+                    className="shadow-green-glow-md"
+                  >
+                    Go to My Account
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/signup">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    rightIcon={<HiArrowRight className="w-5 h-5" />}
+                    className="shadow-green-glow-md"
+                  >
+                    Start Planning Free
+                  </Button>
+                </Link>
+              )}
+              <Link to="/discover/cities">
                 <Button
-                  variant="primary"
+                  variant="secondary"
                   size="lg"
-                  rightIcon={<HiArrowRight className="w-5 h-5" />}
-                  className="shadow-green-glow-md"
                 >
-                  Start Planning Free
+                  Explore Destinations
                 </Button>
               </Link>
-              <button className="inline-flex items-center gap-3 text-sm font-semibold text-neutral-700 hover:text-primary-600 transition-colors group">
-                <span className="w-11 h-11 rounded-full border-2 border-neutral-200 flex items-center justify-center group-hover:border-primary-400 group-hover:bg-primary-50 transition-all">
-                  <HiOutlinePlay className="w-4 h-4 ml-0.5" />
-                </span>
-                Watch 2-min Demo
-              </button>
             </div>
 
             {/* Trust badges */}

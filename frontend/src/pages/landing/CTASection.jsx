@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { HiArrowRight, HiOutlineCheckCircle } from 'react-icons/hi'
 import Button from '../../components/ui/Button'
+import { useAuth } from '../../context/AuthContext'
 
 const perks = [
   'No credit card required',
@@ -10,6 +11,7 @@ const perks = [
 ]
 
 export default function CTASection() {
+  const { isAuthenticated } = useAuth()
   return (
     <section className="py-24 bg-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,16 +56,29 @@ export default function CTASection() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/signup">
-                <Button
-                  variant="white"
-                  size="xl"
-                  rightIcon={<HiArrowRight className="w-5 h-5" />}
-                  className="font-bold shadow-xl"
-                >
-                  Create Free Account
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link to="/dashboard">
+                  <Button
+                    variant="white"
+                    size="xl"
+                    rightIcon={<HiArrowRight className="w-5 h-5" />}
+                    className="font-bold shadow-xl"
+                  >
+                    Go to My Account
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/signup">
+                  <Button
+                    variant="white"
+                    size="xl"
+                    rightIcon={<HiArrowRight className="w-5 h-5" />}
+                    className="font-bold shadow-xl"
+                  >
+                    Create Free Account
+                  </Button>
+                </Link>
+              )}
               <Link to="/discover/cities">
                 <Button
                   size="xl"
