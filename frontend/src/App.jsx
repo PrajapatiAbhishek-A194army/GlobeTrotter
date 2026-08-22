@@ -24,6 +24,9 @@ import CreateTripPage from './pages/trips/CreateTripPage'
 import TripDetailPage from './pages/trips/TripDetailPage'
 import EditTripPage   from './pages/trips/EditTripPage'
 
+// Phase 6 — Itinerary Builder
+import ItineraryPage from './pages/trips/ItineraryPage'
+
 // Auth guard
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -107,7 +110,7 @@ function AppRoutes() {
 
       {/* ── Phase 6 — Itinerary (protected) ── */}
       <Route path="/trips/:id/itinerary" element={
-        <ProtectedRoute><PlaceholderApp title="Itinerary Builder" /></ProtectedRoute>
+        <ProtectedRoute><ItineraryPage /></ProtectedRoute>
       }/>
 
       {/* ── Phase 7 — Discovery (public) ── */}

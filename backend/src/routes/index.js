@@ -33,10 +33,9 @@ import destinationRoutes from './destination.routes.js'
 router.use('/trips',        tripRoutes)
 router.use('/destinations', destinationRoutes)
 
-// Phase 5+:
-// import stopRoutes from './stop.routes.js'
-// import activityRoutes from './activity.routes.js'
-// import budgetRoutes from './budget.routes.js'
-// import adminRoutes from './admin.routes.js'
+// Phase 6: Itinerary — Stops & Activities (nested under trips)
+import stopRoutes from './stop.routes.js'
+router.use('/trips/:tripId/stops', stopRoutes)
 
 export default router
+
