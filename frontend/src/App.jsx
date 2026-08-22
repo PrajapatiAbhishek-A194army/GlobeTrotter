@@ -34,6 +34,12 @@ import DiscoverActivitiesPage from './pages/discover/DiscoverActivitiesPage'
 // Phase 8 — Budget Planner
 import BudgetPage from './pages/trips/BudgetPage'
 
+// Phase 9 — Trip Calendar
+import CalendarPage from './pages/trips/CalendarPage'
+
+// Phase 10 — Profile
+import ProfilePage from './pages/profile/ProfilePage'
+
 // Auth guard
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -131,13 +137,13 @@ function AppRoutes() {
 
       {/* ── Phase 9 — Calendar (protected) ── */}
       <Route path="/trips/:id/calendar" element={
-        <ProtectedRoute><PlaceholderApp title="Trip Calendar" /></ProtectedRoute>
+        <ProtectedRoute><CalendarPage /></ProtectedRoute>
       }/>
 
       {/* ── Phase 10 — Shared & Profile ── */}
       <Route path="/share/:token" element={<PlaceholderPublic title="Shared Itinerary" />} />
       <Route path="/profile" element={
-        <ProtectedRoute><PlaceholderApp title="My Profile" /></ProtectedRoute>
+        <ProtectedRoute><ProfilePage /></ProtectedRoute>
       }/>
       <Route path="/community" element={<PlaceholderPublic title="Community" />} />
 
