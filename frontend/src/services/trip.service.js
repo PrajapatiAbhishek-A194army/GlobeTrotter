@@ -47,4 +47,16 @@ export const generateShareToken = async (id) => {
   return data.data.shareToken
 }
 
-export default { getTrips, getTripStats, getTripById, createTrip, updateTrip, deleteTrip, getSharedTrip, generateShareToken }
+// ── Community / Public ─────────────────────────────────────────────────────────
+
+export const getPublicTrips = async (params = {}) => {
+  const { data } = await api.get('/trips/public', { params })
+  return data.data
+}
+
+export const cloneTrip = async (id) => {
+  const { data } = await api.post(`/trips/${id}/clone`)
+  return data.data.trip
+}
+
+export default { getTrips, getTripStats, getTripById, createTrip, updateTrip, deleteTrip, getSharedTrip, generateShareToken, getPublicTrips, cloneTrip }

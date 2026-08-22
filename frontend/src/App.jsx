@@ -45,6 +45,7 @@ import AdminPage from './pages/admin/AdminPage'
 
 // Phase 10 — Shared itinerary (public)
 import SharedTripPage from './pages/trips/SharedTripPage'
+import CommunityPage  from './pages/community/CommunityPage'
 
 // 404
 import NotFoundPage from './pages/NotFoundPage'
@@ -154,7 +155,7 @@ function AppRoutes() {
       <Route path="/profile" element={
         <ProtectedRoute><ProfilePage /></ProtectedRoute>
       }/>
-      <Route path="/community" element={<DiscoverCitiesPage />} />
+      <Route path="/community" element={<CommunityPage />} />
 
       {/* ── Phase 11 — Admin (admin only) ── */}
       <Route path="/admin" element={

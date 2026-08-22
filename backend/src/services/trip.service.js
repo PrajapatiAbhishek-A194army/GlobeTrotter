@@ -158,3 +158,98 @@ export const getSharedTrip = async (shareToken) => {
   if (!trip) throw createError('Shared trip not found or is no longer public.', 404)
   return trip
 }
+
+/**
+ * List all public trips (community page, no auth needed)
+ */
+export const getPublicTrips = async ({ page = 1, limit = 12, search = '', status = '' } = {}) => {
+  const skip = (page - 1) * limit
+  const where = {
+    isPublic: true,
+    shareToken: { not: null },
+    ...(status && { status }),
+    ...(search && {
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { stops: { some: { city: { contains: search, mode: 'insensitive' } } } },
+      ],
+    }),
+  }
+
+  const [trips, total] = await Promise.all([
+    prisma.trip.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: parseInt(limit),
+      skip,
+      include: {
+        user:   { select: { firstName: true, lastName: true, avatar: true } },
+        stops:  { orderBy: { order: 'asc' }, take: 5, select: { city: true, country: true } },
+        _count: { select: { stops: true } },
+        budget: { select: { totalBudget: true, currency: true } },
+      },
+    }),
+    prisma.trip.count({ where }),
+  ])
+
+  return { trips, total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / limit) }
+}
+
+/**
+ * Clone a public trip into a user's account
+ */
+export const cloneTrip = async (tripId, userId) => {
+  // Fetch the source trip (must be public)
+  const source = await prisma.trip.findFirst({
+    where: { id: tripId, isPublic: true },
+    include: {
+      stops: {
+        orderBy: { order: 'asc' },
+        include: { activities: true },
+      },
+    },
+  })
+  if (!source) throw createError('Trip not found or is not public.', 404)
+
+  const shareToken = crypto.randomUUID().slice(0, 12)
+
+  // Create the cloned trip
+  const cloned = await prisma.trip.create({
+    data: {
+      title:       `${source.title} (copy)`,
+      description: source.description,
+      status:      'PLANNING',
+      isPublic:    false,
+      shareToken,
+      userId,
+      stops: {
+        create: source.stops.map((stop) => ({
+          order:     stop.order,
+          city:      stop.city,
+          country:   stop.country,
+          state:     stop.state,
+          latitude:  stop.latitude,
+          longitude: stop.longitude,
+          image:     stop.image,
+          notes:     stop.notes,
+          activities: {
+            create: stop.activities.map((act) => ({
+              title:     act.title,
+              category:  act.category,
+              cost:      act.cost,
+              duration:  act.duration,
+              startTime: act.startTime,
+              endTime:   act.endTime,
+              location:  act.location,
+              notes:     act.notes,
+            })),
+          },
+        })),
+      },
+    },
+    include: { stops: true },
+  })
+
+  return cloned
+}

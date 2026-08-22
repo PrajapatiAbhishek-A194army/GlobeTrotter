@@ -38,8 +38,9 @@ const tripValidation = [
 
 const router = Router()
 
-// ── Public route (no auth) — shared trip view ──
-router.get('/share/:token', tripController.getSharedTrip)
+// ── Public routes (no auth) ──
+router.get('/public',        tripController.getPublicTrips)
+router.get('/share/:token',  tripController.getSharedTrip)
 
 // All remaining trip routes require authentication
 router.use(protect)
@@ -54,7 +55,8 @@ router.get  ('/:id', tripController.getTripById)
 router.patch('/:id', upload.single('coverImage'), validate, tripController.updateTrip)
 router.delete('/:id', tripController.deleteTrip)
 
-// Share token generation
+// Share & Clone
 router.post('/:id/share', tripController.generateShareToken)
+router.post('/:id/clone', tripController.cloneTrip)
 
 export default router

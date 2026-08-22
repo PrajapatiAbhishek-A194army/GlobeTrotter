@@ -76,3 +76,19 @@ export const getSharedTrip = async (req, res, next) => {
     res.json({ success: true, data: { trip } })
   } catch (err) { next(err) }
 }
+
+// GET /api/trips/public  (no auth)
+export const getPublicTrips = async (req, res, next) => {
+  try {
+    const result = await tripService.getPublicTrips(req.query)
+    res.json({ success: true, data: result })
+  } catch (err) { next(err) }
+}
+
+// POST /api/trips/:id/clone  (auth required)
+export const cloneTrip = async (req, res, next) => {
+  try {
+    const trip = await tripService.cloneTrip(req.params.id, req.user.id)
+    res.status(201).json({ success: true, message: 'Trip copied to your account!', data: { trip } })
+  } catch (err) { next(err) }
+}
