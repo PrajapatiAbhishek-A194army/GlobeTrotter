@@ -2,7 +2,7 @@ import prisma from '../config/database.js'
 import { createError } from '../middleware/errorHandler.js'
 import { hashPassword } from '../utils/password.js'
 
-// ── Platform Stats ─────────────────────────────────────────────────────────────
+// ── Platform Stats & Analytics ───────────────────────────────────────────────
 export const getPlatformStats = async () => {
   const [
     totalUsers,
@@ -12,6 +12,11 @@ export const getPlatformStats = async () => {
     totalDestinations,
     tripsByStatus,
     newUsersThisWeek,
+    newUsersThisMonth,
+    topStopsByCity,
+    activitiesByCategory,
+    budgetAgg,
+    recentUsers,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.trip.count(),
@@ -22,16 +27,76 @@ export const getPlatformStats = async () => {
     prisma.user.count({
       where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
     }),
+    prisma.user.count({
+      where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+    }),
+    prisma.stop.groupBy({
+      by: ['city'],
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 8,
+    }),
+    prisma.activity.groupBy({
+      by: ['category'],
+      _count: { id: true },
+      _sum: { cost: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    }),
+    prisma.budget.aggregate({
+      _sum: { totalBudget: true },
+    }),
+    prisma.user.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        avatar: true,
+        createdAt: true,
+        _count: { select: { trips: true } },
+      },
+    }),
   ])
 
   const statusMap = Object.fromEntries(tripsByStatus.map(({ status, _count }) => [status, _count]))
 
+  const topCities = topStopsByCity
+    .filter(s => s.city)
+    .map(s => ({
+      city: s.city,
+      stopsCount: s._count.id,
+    }))
+
+  const categoriesBreakdown = activitiesByCategory.map(cat => ({
+    category: cat.category,
+    count: cat._count.id,
+    totalCost: cat._sum.cost || 0,
+  }))
+
+  const avgTripsPerUser = totalUsers > 0 ? (totalTrips / totalUsers).toFixed(1) : 0
+
   return {
-    users:        { total: totalUsers,   newThisWeek: newUsersThisWeek },
-    trips:        { total: totalTrips,   byStatus: statusMap },
-    stops:        totalStops,
-    activities:   totalActivities,
+    users: {
+      total: totalUsers,
+      newThisWeek: newUsersThisWeek,
+      newThisMonth: newUsersThisMonth,
+      avgTripsPerUser,
+    },
+    trips: {
+      total: totalTrips,
+      byStatus: statusMap,
+    },
+    stops: totalStops,
+    activities: totalActivities,
     destinations: totalDestinations,
+    totalBudgetTracked: budgetAgg._sum.totalBudget || 0,
+    topCities,
+    categoriesBreakdown,
+    recentUsers,
   }
 }
 
@@ -110,7 +175,7 @@ export const getAllTrips = async ({ page = 1, limit = 20, search = '', status = 
     prisma.trip.findMany({
       where,
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user: { select: { id: true, firstName: true, lastName: true, email: true, avatar: true } },
         _count: { select: { stops: true } },
       },
       orderBy: { createdAt: 'desc' },
