@@ -25,7 +25,8 @@ import TripDetailPage from './pages/trips/TripDetailPage'
 import EditTripPage   from './pages/trips/EditTripPage'
 
 // Phase 6 — Itinerary Builder
-import ItineraryPage from './pages/trips/ItineraryPage'
+import ItineraryPage       from './pages/trips/ItineraryPage'
+import GlobalItineraryPage from './pages/trips/GlobalItineraryPage'
 
 // Phase 7 — Discovery
 import DiscoverCitiesPage     from './pages/discover/DiscoverCitiesPage'
@@ -33,10 +34,12 @@ import DiscoverActivitiesPage from './pages/discover/DiscoverActivitiesPage'
 import DestinationDetailPage  from './pages/discover/DestinationDetailPage'
 
 // Phase 8 — Budget Planner
-import BudgetPage from './pages/trips/BudgetPage'
+import BudgetPage       from './pages/trips/BudgetPage'
+import GlobalBudgetPage from './pages/trips/GlobalBudgetPage'
 
 // Phase 9 — Trip Calendar
-import CalendarPage from './pages/trips/CalendarPage'
+import CalendarPage       from './pages/trips/CalendarPage'
+import GlobalCalendarPage from './pages/trips/GlobalCalendarPage'
 
 // Phase 10 — Profile
 import ProfilePage from './pages/profile/ProfilePage'
@@ -133,6 +136,9 @@ function AppRoutes() {
       }/>
 
       {/* ── Phase 6 — Itinerary (protected) ── */}
+      <Route path="/itinerary" element={
+        <ProtectedRoute><GlobalItineraryPage /></ProtectedRoute>
+      }/>
       <Route path="/trips/:id/itinerary" element={
         <ProtectedRoute><ItineraryPage /></ProtectedRoute>
       }/>
@@ -144,11 +150,17 @@ function AppRoutes() {
       <Route path="/discover/activities" element={<DiscoverActivitiesPage />} />
 
       {/* ── Phase 8 — Budget (protected) ── */}
+      <Route path="/budget" element={
+        <ProtectedRoute><GlobalBudgetPage /></ProtectedRoute>
+      }/>
       <Route path="/trips/:id/budget" element={
         <ProtectedRoute><BudgetPage /></ProtectedRoute>
       }/>
 
       {/* ── Phase 9 — Calendar (protected) ── */}
+      <Route path="/calendar" element={
+        <ProtectedRoute><GlobalCalendarPage /></ProtectedRoute>
+      }/>
       <Route path="/trips/:id/calendar" element={
         <ProtectedRoute><CalendarPage /></ProtectedRoute>
       }/>

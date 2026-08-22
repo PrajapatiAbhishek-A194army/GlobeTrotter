@@ -17,15 +17,15 @@ const navGroups = [
     items: [
       { icon: HiOutlineHome,           label: 'Dashboard',    href: '/dashboard' },
       { icon: HiOutlineMap,            label: 'My Trips',     href: '/trips' },
-      { icon: HiOutlineCalendar,       label: 'Itinerary',    href: '/trips/new', badge: 'Plan' },
+      { icon: HiOutlineCalendar,       label: 'Itinerary',    href: '/itinerary' },
     ],
   },
   {
     label: 'Explore',
     items: [
       { icon: HiOutlineSearch,         label: 'Discover',     href: '/discover/cities' },
-      { icon: HiOutlineCurrencyDollar, label: 'Budget',       href: '/trips' },
-      { icon: HiOutlineCalendar,       label: 'Calendar',     href: '/trips' },
+      { icon: HiOutlineCurrencyDollar, label: 'Budget',       href: '/budget' },
+      { icon: HiOutlineCalendar,       label: 'Calendar',     href: '/calendar' },
     ],
   },
   {
