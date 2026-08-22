@@ -161,18 +161,30 @@ export const resetPassword = async (rawToken, newPassword) => {
  * Update authenticated user's profile
  */
 export const updateProfile = async (userId, data) => {
-  const allowed = ['firstName', 'lastName', 'phone', 'city', 'country', 'bio', 'preferences']
+  const allowed = ['firstName', 'lastName', 'phone', 'city', 'country', 'bio', 'preferences', 'avatar']
   const filtered = Object.fromEntries(
-    Object.entries(data).filter(([k]) => allowed.includes(k))
+    Object.entries(data).filter(([k, v]) => allowed.includes(k) && v !== undefined)
   )
 
-  const user = await prisma.user.update({
-    where:  { id: userId },
-    data:   filtered,
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: filtered,
     select: safeUserSelect,
   })
 
-  return user
+  return updated
+}
+
+/**
+ * Upload and set user's avatar
+ */
+export const uploadAvatar = async (userId, avatarPath) => {
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: avatarPath },
+    select: safeUserSelect,
+  })
+  return updated
 }
 
 /**

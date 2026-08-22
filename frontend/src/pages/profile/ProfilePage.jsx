@@ -156,6 +156,38 @@ export default function ProfilePage() {
     }
   }
 
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const fileInputRef = useState(null)
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Limit to 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5 MB.')
+      return
+    }
+
+    setUploadingAvatar(true)
+    const toastId = toast.loading('Uploading photo…')
+    try {
+      const updatedUser = await authService.uploadAvatar(file)
+      updateUserLocal(updatedUser)
+      toast.success('Profile photo updated! 📸', { id: toastId })
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to upload photo.', { id: toastId })
+    } finally {
+      setUploadingAvatar(false)
+      // reset file input
+      e.target.value = ''
+    }
+  }
+
+  const avatarSrc = user?.avatar
+    ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`)
+    : null
+
   const initials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}` : '?'
 
   if (!form) return <AppLayout><div className="p-8 text-center text-neutral-400">Loading…</div></AppLayout>
@@ -183,22 +215,40 @@ export default function ProfilePage() {
           )}
         </div>
 
+        {/* Hidden Avatar File Input */}
+        <input
+          id="avatar-file-input"
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+          onChange={handleAvatarChange}
+          className="hidden"
+        />
+
         {/* ── Avatar + Stats ── */}
-        <div className="bg-gradient-to-br from-primary-600 to-emerald-600 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 text-white">
+        <div className="bg-gradient-to-br from-primary-600 to-emerald-600 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 text-white shadow-card">
           {/* Avatar */}
-          <div className="relative shrink-0">
-            <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-4xl font-bold text-white border-2 border-white/40">
-              {user?.avatar ? (
-                <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-3xl" />
+          <div className="relative shrink-0 group">
+            <div
+              onClick={() => document.getElementById('avatar-file-input')?.click()}
+              className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-4xl font-bold text-white border-2 border-white/40 overflow-hidden cursor-pointer shadow-md hover:opacity-90 transition-all"
+            >
+              {uploadingAvatar ? (
+                <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+              ) : avatarSrc ? (
+                <img src={avatarSrc} alt="" className="w-full h-full object-cover rounded-3xl" />
               ) : (
                 <span>{initials}</span>
               )}
             </div>
             <button
-              className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md text-primary-600 hover:bg-primary-50 transition-colors"
-              title="Change avatar (coming soon)"
+              type="button"
+              id="change-avatar-btn"
+              onClick={() => document.getElementById('avatar-file-input')?.click()}
+              disabled={uploadingAvatar}
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg text-primary-600 hover:bg-primary-50 transition-all hover:scale-110 active:scale-95"
+              title="Upload profile photo"
             >
-              <HiOutlineCamera className="w-3.5 h-3.5" />
+              <HiOutlineCamera className="w-4 h-4" />
             </button>
           </div>
 

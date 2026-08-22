@@ -52,6 +52,31 @@ const changePasswordValidation = [
     .withMessage('New password must contain uppercase, lowercase, and a number.'),
 ]
 
+import multer from 'multer'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// Multer — avatar upload
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '../uploads'),
+  filename: (req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+    cb(null, `avatar-${unique}${path.extname(file.originalname)}`)
+  },
+})
+
+const upload = multer({
+  storage,
+  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|webp|gif/
+    if (allowed.test(path.extname(file.originalname).toLowerCase())) cb(null, true)
+    else cb(new Error('Only image files are allowed.'))
+  },
+})
+
 // ── Routes ─────────────────────────────────────────────────────────────────────
 
 // Public
@@ -62,7 +87,8 @@ router.patch('/reset-password/:token', resetPasswordValidation, validate, authCo
 
 // Protected
 router.get  ('/me',              protect, authController.getMe)
-router.patch('/update-profile',  protect, authController.updateProfile)
+router.patch('/update-profile',  protect, upload.single('avatar'), authController.updateProfile)
+router.post ('/avatar',          protect, upload.single('avatar'), authController.uploadAvatar)
 router.patch('/change-password', protect, changePasswordValidation, validate, authController.changePassword)
 
 export default router

@@ -82,8 +82,26 @@ export const changePassword = async (req, res, next) => {
 // PATCH /api/auth/update-profile  [protected]
 export const updateProfile = async (req, res, next) => {
   try {
-    const user = await authService.updateProfile(req.user.id, req.body)
+    const payload = { ...req.body }
+    if (req.file) {
+      payload.avatar = `/uploads/${req.file.filename}`
+    }
+    const user = await authService.updateProfile(req.user.id, payload)
     res.json({ success: true, message: 'Profile updated.', data: { user } })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// POST /api/auth/avatar  [protected]
+export const uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image file uploaded.' })
+    }
+    const avatarUrl = `/uploads/${req.file.filename}`
+    const user = await authService.uploadAvatar(req.user.id, avatarUrl)
+    res.json({ success: true, message: 'Avatar updated!', data: { user, avatarUrl } })
   } catch (err) {
     next(err)
   }

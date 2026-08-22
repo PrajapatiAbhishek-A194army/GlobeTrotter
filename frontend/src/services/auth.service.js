@@ -61,4 +61,16 @@ export const updateProfile = async (updates) => {
   return data.data.user
 }
 
-export default { signup, login, getMe, forgotPassword, resetPassword, changePassword, updateProfile }
+/**
+ * Upload avatar image file
+ */
+export const uploadAvatar = async (file) => {
+  const formData = new FormData()
+  formData.append('avatar', file)
+  const { data } = await api.post('/auth/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.data.user
+}
+
+export default { signup, login, getMe, forgotPassword, resetPassword, changePassword, updateProfile, uploadAvatar }

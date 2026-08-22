@@ -153,11 +153,23 @@ export default function AppLayout({ children }) {
       <div className={clsx('border-t border-neutral-100 p-3', collapsed && 'px-2')}>
         {!collapsed ? (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700 shrink-0">
-              {user?.firstName?.[0]}{user?.lastName?.[0]}
-            </div>
+            <Link to="/profile" className="shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary-100 overflow-hidden flex items-center justify-center text-sm font-bold text-primary-700 hover:ring-2 hover:ring-primary-400 transition-all">
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{user?.firstName?.[0]}{user?.lastName?.[0]}</span>
+                )}
+              </div>
+            </Link>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-neutral-800 truncate">{user?.firstName} {user?.lastName}</p>
+              <Link to="/profile" className="hover:underline">
+                <p className="text-sm font-semibold text-neutral-800 truncate">{user?.firstName} {user?.lastName}</p>
+              </Link>
               <p className="text-xs text-neutral-400 truncate">{user?.email}</p>
             </div>
             <button
@@ -170,9 +182,19 @@ export default function AppLayout({ children }) {
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700">
-              {user?.firstName?.[0]}{user?.lastName?.[0]}
-            </div>
+            <Link to="/profile" title={`${user?.firstName} ${user?.lastName}`}>
+              <div className="w-8 h-8 rounded-full bg-primary-100 overflow-hidden flex items-center justify-center text-sm font-bold text-primary-700 hover:ring-2 hover:ring-primary-400 transition-all">
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{user?.firstName?.[0]}{user?.lastName?.[0]}</span>
+                )}
+              </div>
+            </Link>
             <button onClick={handleLogout} title="Logout" className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-all">
               <HiOutlineLogout className="w-4 h-4" />
             </button>
