@@ -173,8 +173,16 @@ function UsersTab() {
                   <tr key={user.id} className="hover:bg-neutral-50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center shrink-0">
-                          {user.firstName[0]}{user.lastName[0]}
+                        <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center overflow-hidden shrink-0">
+                          {user.avatar ? (
+                            <img
+                              src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span>{user.firstName[0]}{user.lastName[0]}</span>
+                          )}
                         </div>
                         <span className="font-medium text-neutral-900 whitespace-nowrap">
                           {user.firstName} {user.lastName}

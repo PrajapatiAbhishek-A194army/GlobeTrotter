@@ -268,8 +268,16 @@ export default function AppLayout({ children }) {
 
               {/* User avatar */}
               <Link to="/profile" className="flex items-center gap-2.5 pl-2 group">
-                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700 group-hover:ring-2 group-hover:ring-primary-300 transition-all">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
+                <div className="w-8 h-8 rounded-full bg-primary-100 overflow-hidden flex items-center justify-center text-sm font-bold text-primary-700 group-hover:ring-2 group-hover:ring-primary-300 transition-all">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{user?.firstName?.[0]}{user?.lastName?.[0]}</span>
+                  )}
                 </div>
                 <div className="hidden sm:block text-right">
                   <p className="text-xs font-semibold text-neutral-800 leading-tight">{user?.firstName} {user?.lastName}</p>
