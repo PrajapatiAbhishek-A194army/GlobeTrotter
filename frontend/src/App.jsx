@@ -43,6 +43,12 @@ import ProfilePage from './pages/profile/ProfilePage'
 // Phase 11 — Admin
 import AdminPage from './pages/admin/AdminPage'
 
+// Phase 10 — Shared itinerary (public)
+import SharedTripPage from './pages/trips/SharedTripPage'
+
+// 404
+import NotFoundPage from './pages/NotFoundPage'
+
 // Auth guard
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -143,12 +149,12 @@ function AppRoutes() {
         <ProtectedRoute><CalendarPage /></ProtectedRoute>
       }/>
 
-      {/* ── Phase 10 — Shared & Profile ── */}
-      <Route path="/share/:token" element={<PlaceholderPublic title="Shared Itinerary" />} />
+      {/* ── Phase 10 — Shared trip (public) ── */}
+      <Route path="/share/:token" element={<SharedTripPage />} />
       <Route path="/profile" element={
         <ProtectedRoute><ProfilePage /></ProtectedRoute>
       }/>
-      <Route path="/community" element={<PlaceholderPublic title="Community" />} />
+      <Route path="/community" element={<DiscoverCitiesPage />} />
 
       {/* ── Phase 11 — Admin (admin only) ── */}
       <Route path="/admin" element={
@@ -156,7 +162,7 @@ function AppRoutes() {
       }/>
 
       {/* ── 404 ── */}
-      <Route path="*" element={<PlaceholderPublic title="Page Not Found (404)" />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

@@ -177,6 +177,11 @@ export default function TripDetailPage() {
                     Budget
                   </Button>
                 </Link>
+                <Link to={`/trips/${id}/calendar`}>
+                  <Button id="calendar-btn" variant="ghost" size="sm" leftIcon={<HiOutlineCalendar className="w-3.5 h-3.5" />}>
+                    Calendar
+                  </Button>
+                </Link>
                 <Button id="share-btn" variant="ghost" size="sm" leftIcon={<HiOutlineShare className="w-3.5 h-3.5" />} onClick={handleShare}>
                   Share
                 </Button>
